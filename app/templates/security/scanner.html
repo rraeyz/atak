@@ -582,10 +582,10 @@ function playSound(success) {
     }
 }
 
-// Sayfa yüklendiğinde kameraları yükle
-window.addEventListener('load', () => {
-    loadCameras();
-}); // DOMContentLoaded sonu
+// Kameraları yükle (DOMContentLoaded içinde)
+loadCameras();
+
+}); // DOMContentLoaded event listener sonu
 
 // Sayfa kapanırken kamerayı durdur
 window.addEventListener('beforeunload', () => {
