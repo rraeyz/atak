@@ -113,10 +113,10 @@
 
                             <!-- Kontrol Butonları -->
                             <div class="d-flex gap-2">
-                                <button id="start-btn" class="btn btn-success btn-sm flex-fill" onclick="startScanning()">
+                                <button id="start-btn" class="btn btn-success btn-sm flex-fill">
                                     <i class="fas fa-play"></i> Başlat
                                 </button>
-                                <button id="stop-btn" class="btn btn-danger btn-sm flex-fill" onclick="stopScanning()" style="display: none;">
+                                <button id="stop-btn" class="btn btn-danger btn-sm flex-fill" style="display: none;">
                                     <i class="fas fa-stop"></i> Durdur
                                 </button>
                             </div>
@@ -590,6 +590,19 @@ function playSound(success) {
         // Ses çalınamadı, sessiz devam et
     }
 }
+
+// Event Listener'ları Bağla (HTML onclick yerine)
+document.getElementById('start-btn').addEventListener('click', function() {
+    console.log('🔧 Start button clicked');
+    startScanning();
+});
+
+document.getElementById('stop-btn').addEventListener('click', function() {
+    console.log('🔧 Stop button clicked');
+    stopScanning();
+});
+
+console.log('🔧 Event listeners bağlandı');
 
 // Kameraları yükle
 loadCameras();
