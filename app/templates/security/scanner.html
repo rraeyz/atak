@@ -562,6 +562,16 @@ function playSound(success) {
 
 // Sayfa yüklendiğinde kameraları yükle
 window.addEventListener('load', () => {
+    // Html5Qrcode kütüphanesinin yüklendiğini kontrol et
+    if (typeof Html5Qrcode === 'undefined') {
+        showDebug('❌ QR kod kütüphanesi yüklenemedi! Sayfa yenileniyor...', true);
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+        return;
+    }
+    
+    showDebug('QR kod kütüphanesi yüklendi ✓');
     loadCameras();
 });
 
