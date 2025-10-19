@@ -4,8 +4,16 @@
 
 {% block head %}
 {{ super() }}
-<!-- QR Kod Okuma Kütüphanesi -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<!-- QR Kod Okuma Kütüphanesi - Birden fazla CDN deniyoruz -->
+<script>
+    console.log('[QR CDN] Script yükleme başlıyor...');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" 
+        onload="console.log('[QR CDN] jsdelivr yüklendi ✓'); window.qrLibLoaded=true;" 
+        onerror="console.error('[QR CDN] jsdelivr başarısız, unpkg deneniyor...'); this.onerror=null; this.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'"></script>
+<script>
+    console.log('[QR CDN] Script tag işlendi');
+</script>
 <style>
     #qr-reader {
         border: 2px solid #007bff;
@@ -561,18 +569,33 @@ function playSound(success) {
 }
 
 // Sayfa yüklendiğinde kameraları yükle
-window.addEventListener('load', () => {
+let loadAttempt = 0;
+function checkAndLoad() {
+    loadAttempt++;
+    console.log('[QR Scanner] Yükleme denemesi:', loadAttempt);
+    console.log('[QR Scanner] Html5Qrcode var mı?', typeof Html5Qrcode !== 'undefined');
+    
     // Html5Qrcode kütüphanesinin yüklendiğini kontrol et
     if (typeof Html5Qrcode === 'undefined') {
-        showDebug('❌ QR kod kütüphanesi yüklenemedi! Sayfa yenileniyor...', true);
-        setTimeout(() => {
-            location.reload();
-        }, 2000);
+        if (loadAttempt < 10) {
+            // 10 kez 500ms aralıklarla dene (toplam 5 saniye)
+            showDebug('QR kod kütüphanesi bekleniyor... (deneme ' + loadAttempt + '/10)', false);
+            setTimeout(checkAndLoad, 500);
+        } else {
+            showDebug('❌ QR kod kütüphanesi yüklenemedi! Lütfen internet bağlantınızı kontrol edin.', true);
+            console.error('[QR Scanner] Kütüphane 5 saniye içinde yüklenemedi');
+        }
         return;
     }
     
     showDebug('QR kod kütüphanesi yüklendi ✓');
+    console.log('[QR Scanner] Kütüphane başarıyla yüklendi');
     loadCameras();
+}
+
+window.addEventListener('load', () => {
+    console.log('[QR Scanner] Sayfa yüklendi, kütüphane kontrolü başlıyor...');
+    checkAndLoad();
 });
 
 // Sayfa kapanırken kamerayı durdur
