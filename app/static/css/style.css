@@ -198,10 +198,12 @@ body::before {
         width: 100%;
         padding: 1.25rem 1.5rem; /* DAHA BÜYÜK padding */
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-left: 2px solid transparent; /* Varsayılan şeffaf border */
         text-align: left;
         font-size: 1.1rem; /* Daha büyük yazı */
         margin: 0; /* Hiç margin olmasın */
-        border-radius: 0; /* Keskin köşeler */
+        border-radius: 0 !important; /* BALONCUK YOK */
+        background: transparent !important; /* ARKA PLAN YOK */
     }
     
     /* Son öğenin alt çizgisini kaldır */
@@ -209,24 +211,28 @@ body::before {
         border-bottom: none;
     }
     
-    /* Mobilde hover efektini devre dışı bırak - sadece dokunma için */
+    /* Mobilde hover efektini TAMAMEN devre dışı bırak */
     .nav-link:hover {
-        background: transparent;
+        background: transparent !important;
         color: var(--text-gray);
+        border-radius: 0;
     }
     
-    /* Mobilde aktif tap efekti - DAHA BELİRGİN */
+    /* Mobilde aktif tap efekti - SAF, BALONCUKSUZ */
     .nav-link:active {
-        background: rgba(6, 182, 212, 0.3);
+        background: transparent;
         color: var(--cosmic-cyan);
+        border-left: 3px solid var(--cosmic-cyan);
     }
     
-    /* Aktif sayfa vurgusu - ÇOK DAHA BELİRGİN */
+    /* Aktif sayfa vurgusu - SADECE SOL ÇİZGİ + RENK, ARKA PLAN YOK */
     .nav-link.active {
-        background: rgba(251, 191, 36, 0.2);
+        background: transparent !important; /* ARKA PLAN YOK */
         border-left: 4px solid var(--star-yellow);
+        border-radius: 0 !important; /* BALONCUK YOK */
         color: var(--star-yellow);
         font-weight: 600;
+        padding-left: calc(1.5rem - 4px); /* Border kalınlığı için padding ayarla */
     }
     
     /* Buton stilleri mobilde */
