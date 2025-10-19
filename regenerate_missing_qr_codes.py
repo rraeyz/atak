@@ -23,8 +23,9 @@ with app.app_context():
     already_exists_count = 0
     
     for qr_code in all_qr_codes:
-        # Dosya yolunu oluştur
-        file_path = os.path.join('app', 'static', qr_code.qr_image_path)
+        # Flask app root kullanarak mutlak yol oluştur
+        from flask import current_app
+        file_path = os.path.join(current_app.root_path, 'static', qr_code.qr_image_path)
         
         if not os.path.exists(file_path):
             missing_count += 1
