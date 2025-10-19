@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Duyurular - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>📢 Duyuru Yönetimi</h1>
+        <p>Duyuruları yönetin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-primary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 0;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('admin.new_announcement') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Duyuru
+        </a>
+    </div>
+
+    {% if announcements %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Hedef Roller</th>
+                            <th>Durum</th>
+                            <th>E-posta</th>
+                            <th>Oluşturan</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for announcement in announcements %}
+                        <tr>
+                            <td>
+                                <strong>{{ announcement.title }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ announcement.content[:100] }}{% if announcement.content|length > 100 %}...{% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                {% if announcement.target_roles == 'all' %}
+                                    <span class="badge bg-info">Tüm Kullanıcılar</span>
+                                {% else %}
+                                    {% set role_ids = announcement.target_roles.split(',') %}
+                                    {% for role_id in role_ids %}
+                                        {% for role in roles %}
+                                            {% if role.id == role_id|int %}
+                                                <span class="badge bg-secondary">{{ role.display_name }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if announcement.is_published %}
+                                    <span class="badge bg-success">Yayında</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Taslak</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if announcement.send_email %}
+                                    {% if announcement.email_sent %}
+                                        <span class="badge bg-success">Gönderildi</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Gönderilecek</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Kapalı</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ announcement.creator.full_name }}</td>
+                            <td>{{ announcement.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_announcement', id=announcement.id) }}" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" 
+                                      action="{{ url_for('admin.delete_announcement', id=announcement.id) }}" 
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Bu duyuruyu silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Henüz duyuru bulunmuyor. 
+        <a href="{{ url_for('admin.new_announcement') }}">İlk duyuruyu oluşturun.</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

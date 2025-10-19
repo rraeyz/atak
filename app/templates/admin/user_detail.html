@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Kullanıcı Detayı - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 0;">
+    <div class="card">
+        <div class="card-header">
+            <h2>👤 Kullanıcı Detayı</h2>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; gap: 1.5rem;">
+                <div>
+                    <strong>Kullanıcı Adı:</strong> {{ user.username }}
+                </div>
+                <div>
+                    <strong>Ad Soyad:</strong> {{ user.first_name }} {{ user.last_name }}
+                </div>
+                <div>
+                    <strong>E-posta:</strong> {{ user.email }}
+                </div>
+                <div>
+                    <strong>Telefon:</strong> {{ user.phone or '-' }}
+                </div>
+                <div>
+                    <strong>Durum:</strong>
+                    {% if user.is_active %}
+                        <span class="badge" style="background: var(--success);">✓ Aktif</span>
+                    {% else %}
+                        <span class="badge" style="background: var(--danger);">🚫 Banlandı</span>
+                    {% endif %}
+                    
+                    {% if user.is_approved %}
+                        <span class="badge" style="background: var(--success);">✓ Onaylı</span>
+                    {% else %}
+                        <span class="badge" style="background: var(--warning);">⏳ Onay Bekliyor</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>Roller:</strong>
+                    <div style="margin-top: 0.5rem;">
+                        {% for role in user.roles %}
+                            <span class="badge" style="background: var(--cosmic-purple); display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                {{ role.display_name }}
+                                <form method="POST" action="{{ url_for('admin.remove_user_role', id=user.id, role_id=role.id) }}" style="display: inline;">
+                                    <button type="submit" style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin: 0; font-size: 1.2rem;" 
+                                            onclick="return confirm('Bu rolü kaldırmak istediğinizden emin misiniz?');">
+                                        ×
+                                    </button>
+                                </form>
+                            </span>
+                        {% else %}
+                            <span class="text-muted">Rol atanmamış</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Rol Ekleme Formu -->
+                    <form method="POST" action="{{ url_for('admin.add_user_role', id=user.id) }}" style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: end;">
+                        <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                            <label class="form-label">Yeni Rol Ekle</label>
+                            <select name="role_id" class="form-control" required>
+                                <option value="">Rol Seçin...</option>
+                                {% for role in all_roles %}
+                                    {% if role not in user.roles %}
+                                        <option value="{{ role.id }}">{{ role.display_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-bottom: 0;">
+                            ➕ Ekle
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <strong>Kayıt Tarihi:</strong> {{ user.created_at.strftime('%d.%m.%Y %H:%M') }}
+                </div>
+                <div>
+                    <strong>Son Görülme:</strong> {{ user.last_seen.strftime('%d.%m.%Y %H:%M') if user.last_seen else '-' }}
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                {% if not user.is_approved %}
+                <form method="POST" action="{{ url_for('admin.approve_user', id=user.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-success">
+                        ✓ Kullanıcıyı Onayla
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if current_user.has_role('moderator') or current_user.has_role('admin') %}
+                    {% if not (user.has_role('admin') or user.has_role('moderator')) and user.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('admin.toggle_ban_user', id=user.id) }}" style="display: inline;">
+                        {% if user.is_active %}
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('Bu kullanıcıyı banlamak istediğinizden emin misiniz?');">
+                            🚫 Banla
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-warning">
+                            ✓ Ban Kaldır
+                        </button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
+                {% endif %}
+                
+                <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                    ← Geri Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

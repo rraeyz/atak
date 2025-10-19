@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>⚙️ Admin Dashboard</h1>
+        <p>Sistem yönetim paneli</p>
+    </div>
+</section>
+
+<!-- Admin Navigation -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-primary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <h2 style="font-size: 2rem; color: var(--star-yellow); margin-bottom: 2rem;">📊 İstatistikler</h2>
+        
+        <div class="grid grid-3">
+            <div class="card text-center">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+                <h3 style="font-size: 2.5rem; color: var(--star-yellow); margin-bottom: 0.5rem;">
+                    {{ stats.total_users }}
+                </h3>
+                <p style="color: var(--text-gray);">Toplam Kullanıcı</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                    <small style="color: var(--text-gray);">
+                        ⏳ Bekleyen: <strong style="color: var(--star-yellow);">{{ stats.pending_users }}</strong>
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card text-center">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🗓️</div>
+                <h3 style="font-size: 2.5rem; color: var(--cosmic-cyan); margin-bottom: 0.5rem;">
+                    {{ stats.total_events }}
+                </h3>
+                <p style="color: var(--text-gray);">Toplam Etkinlik</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                    <small style="color: var(--text-gray);">
+                        📅 Yaklaşan: <strong style="color: var(--cosmic-cyan);">{{ stats.upcoming_events }}</strong>
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card text-center">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                <h3 style="font-size: 2.5rem; color: var(--nebula-pink); margin-bottom: 0.5rem;">
+                    {{ stats.total_posts }}
+                </h3>
+                <p style="color: var(--text-gray);">Toplam Yazı</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                    <small style="color: var(--text-gray);">
+                        📊 Yayında: <strong style="color: var(--nebula-pink);">{{ stats.published_posts }}</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-2 mt-3">
+            <div class="card text-center">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                <h3 style="font-size: 2.5rem; color: var(--star-yellow); margin-bottom: 0.5rem;">
+                    {{ stats.total_registrations }}
+                </h3>
+                <p style="color: var(--text-gray);">Etkinlik Kayıtları</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                    <small style="color: var(--text-gray);">
+                        ⏳ Bekleyen: <strong style="color: var(--star-yellow);">{{ stats.pending_registrations }}</strong>
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card text-center">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📧</div>
+                <h3 style="font-size: 2.5rem; color: var(--cosmic-cyan); margin-bottom: 0.5rem;">
+                    {{ stats.total_messages }}
+                </h3>
+                <p style="color: var(--text-gray);">İletişim Mesajları</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                    <small style="color: var(--text-gray);">
+                        📨 Okunmamış: <strong style="color: var(--cosmic-cyan);">{{ stats.unread_messages }}</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Activity -->
+<section style="padding: 4rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div class="grid grid-2">
+            <!-- Recent Users -->
+            <div class="card">
+                <h3 class="card-title">👥 Son Kayıt Olan Kullanıcılar</h3>
+                {% if recent_users %}
+                    {% for user in recent_users %}
+                    <div style="padding: 1rem 0;" class="{% if not loop.last %}border-bottom-glow{% endif %}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <a href="{{ url_for('admin.user_detail', id=user.id) }}" 
+                                   style="color: var(--text-light); text-decoration: none; font-weight: 600;">
+                                    {{ user.username }}
+                                </a>
+                                <br>
+                                <small style="color: var(--text-gray);">
+                                    {{ user.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                </small>
+                            </div>
+                            <span class="badge {% if user.is_approved %}badge-success{% else %}badge-warning{% endif %}">
+                                {% if user.is_approved %}✓ Onaylı{% else %}⏳ Bekliyor{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-sm mt-2">
+                        Tüm Kullanıcılar
+                    </a>
+                {% else %}
+                    <p style="color: var(--text-gray);">Kullanıcı bulunamadı.</p>
+                {% endif %}
+            </div>
+            
+            <!-- Recent Messages -->
+            <div class="card">
+                <h3 class="card-title">📧 Son Mesajlar</h3>
+                {% if recent_messages %}
+                    {% for message in recent_messages %}
+                    <div style="padding: 1rem 0;" class="{% if not loop.last %}border-bottom-glow{% endif %}">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <strong style="color: var(--text-light);">{{ message.subject }}</strong>
+                                <br>
+                                <small style="color: var(--text-gray);">
+                                    {{ message.name }} • {{ message.created_at.strftime('%d.%m.%Y') }}
+                                </small>
+                            </div>
+                            {% if not message.is_read %}
+                                <span class="badge badge-info">Yeni</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('admin.messages') }}" class="btn btn-primary btn-sm mt-2">
+                        Tüm Mesajlar
+                    </a>
+                {% else %}
+                    <p style="color: var(--text-gray);">Mesaj bulunamadı.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

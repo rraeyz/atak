@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}İletişim Mesajları - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>📧 İletişim Mesajları</h1>
+        <p>Gelen mesajları görüntüleyin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-primary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div class="card">
+            <h3 class="card-title">Mesajlar</h3>
+            {% if messages %}
+                {% for message in messages %}
+                <div class="card {% if not message.is_read %}border-highlight{% endif %}" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <h4 style="color: var(--star-yellow); margin-bottom: 0.5rem;">{{ message.subject }}</h4>
+                            <p style="color: var(--text-gray); margin: 0;">
+                                <strong>{{ message.name }}</strong> • {{ message.email }}<br>
+                                {{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </p>
+                        </div>
+                        {% if not message.is_read %}
+                            <span class="badge badge-info">Yeni</span>
+                        {% endif %}
+                    </div>
+                    <p style="color: var(--text-light); line-height: 1.6; white-space: pre-wrap;">{{ message.message }}</p>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow); display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="mailto:{{ message.email }}" class="btn btn-secondary btn-sm">✉️ E-posta Gönder</a>
+                        {% if message.phone %}
+                            <a href="tel:{{ message.phone }}" class="btn btn-secondary btn-sm">📞 Ara</a>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('admin.delete_message', id=message.id) }}" style="display: inline;" onsubmit="return confirm('Bu mesajı silmek istediğinizden emin misiniz?');">
+                            <button type="submit" class="btn btn-danger btn-sm">🗑️ Sil</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-gray); text-align: center;">Henüz mesaj yok.</p>
+            {% endif %}
+            
+            <!-- Pagination -->
+            {% if messages.pages > 1 %}
+            <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+                {% if messages.has_prev %}
+                    <a href="{{ url_for('admin.messages', page=messages.prev_num) }}" class="btn btn-secondary btn-sm">← Önceki</a>
+                {% endif %}
+                
+                <span style="padding: 0.5rem 1rem; color: var(--text-gray);">
+                    Sayfa {{ messages.page }} / {{ messages.pages }}
+                </span>
+                
+                {% if messages.has_next %}
+                    <a href="{{ url_for('admin.messages', page=messages.next_num) }}" class="btn btn-secondary btn-sm">Sonraki →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

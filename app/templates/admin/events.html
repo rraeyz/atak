@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Etkinlikler - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>🗓️ Etkinlik Yönetimi</h1>
+        <p>Etkinlikleri yönetin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-primary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 0;">
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>📅 Etkinlik Yönetimi</h2>
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary">+ Yeni Etkinlik</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Tarih</th>
+                            <th>Konum</th>
+                            <th>Katılımcı</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events.items %}
+                        <tr>
+                            <td>
+                                <strong>{{ event.title }}</strong>
+                                {% if event.is_featured %}
+                                <span class="badge" style="background: var(--star-yellow);">⭐ Öne Çıkan</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ event.event_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>{{ event.location }}</td>
+                            <td>
+                                {{ event.registrations.count() }}
+                                {% if event.max_participants %}
+                                / {{ event.max_participants }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if event.is_published %}
+                                    <span class="badge" style="background: var(--success);">Yayında</span>
+                                {% else %}
+                                    <span class="badge" style="background: var(--warning);">Taslak</span>
+                                {% endif %}
+                                
+                                {% if event.is_registration_open %}
+                                    <span class="badge" style="background: var(--cosmic-cyan);">Kayıt Açık</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('events.detail', id=event.id) }}" class="btn btn-sm btn-primary">
+                                    👁️ Görüntüle
+                                </a>
+                                <a href="{{ url_for('events.edit', id=event.id) }}" class="btn btn-sm btn-secondary">
+                                    ✏️ Düzenle
+                                </a>
+                                <!-- Rapor Butonu (Etkinlik bitmiş ise) -->
+                                {% if event.event_date < now %}
+                                <a href="{{ url_for('admin.event_report', id=event.id) }}" class="btn btn-sm btn-info">
+                                    📊 Rapor
+                                </a>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('events.delete', id=event.id) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('Bu etkinliği silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">🗑️ Sil</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Etkinlik bulunamadı</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if events.pages > 1 %}
+            <div class="pagination" style="margin-top: 2rem;">
+                {% if events.has_prev %}
+                <a href="{{ url_for('admin.events', page=events.prev_num) }}" class="btn btn-secondary">← Önceki</a>
+                {% endif %}
+                
+                <span style="margin: 0 1rem;">Sayfa {{ events.page }} / {{ events.pages }}</span>
+                
+                {% if events.has_next %}
+                <a href="{{ url_for('admin.events', page=events.next_num) }}" class="btn btn-secondary">Sonraki →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

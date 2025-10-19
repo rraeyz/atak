@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Etkinlikler - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>🗓️ Etkinlikler</h1>
+        <p>Astronomi ve uzay bilimleri etkinliklerimize katılın!</p>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('events.index') }}" 
+               class="btn {% if filter_type == 'all' or not filter_type %}btn-primary{% else %}btn-secondary{% endif %}">
+                📅 Tüm Etkinlikler
+            </a>
+            <a href="{{ url_for('events.index', filter='upcoming') }}" 
+               class="btn {% if filter_type == 'upcoming' %}btn-primary{% else %}btn-secondary{% endif %}">
+                ⏰ Yaklaşan
+            </a>
+            <a href="{{ url_for('events.index', filter='past') }}" 
+               class="btn {% if filter_type == 'past' %}btn-primary{% else %}btn-secondary{% endif %}">
+                📜 Geçmiş
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('events.my_registrations') }}" class="btn btn-secondary">
+                    ✅ Kayıtlarım
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Events List -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        {% if upcoming_events or past_events %}
+            <div class="grid grid-2">
+                {% for event in upcoming_events + past_events %}
+                <div class="card">
+                    {% if event.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + event.image) }}" 
+                         alt="{{ event.title }}" 
+                         style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                    {% else %}
+                    <div style="width: 100%; height: 250px; background: linear-gradient(135deg, var(--space-blue), var(--space-purple)); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 4rem;">
+                        🔭
+                    </div>
+                    {% endif %}
+                    
+                    <h3 class="card-title">{{ event.title }}</h3>
+                    <p class="card-text">{{ event.description[:200] }}{% if event.description|length > 200 %}...{% endif %}</p>
+                    
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-gray);">
+                                <span>📅</span>
+                                <span>{{ event.event_date.strftime('%d.%m.%Y %H:%M') }}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-gray);">
+                                <span>📍</span>
+                                <span>{{ event.location }}</span>
+                            </div>
+                            {% if event.max_participants %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-gray);">
+                                <span>👥</span>
+                                <span>{{ event.registrations.filter_by(status='approved').count() }} / {{ event.max_participants }} kişi</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <a href="{{ url_for('events.detail', id=event.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">
+                                📖 Detaylar
+                            </a>
+                            
+                            {% if current_user.is_authenticated and current_user.is_approved %}
+                                {% set user_registration = event.registrations.filter_by(user_id=current_user.id).first() %}
+                                {% if user_registration and user_registration.status != 'cancelled' %}
+                                    {% if user_registration.status == 'approved' %}
+                                        <span class="badge badge-success">✓ Katılıyorsunuz</span>
+                                    {% elif user_registration.status == 'pending' %}
+                                        <span class="badge badge-warning">⏳ Onay Bekleniyor</span>
+                                    {% endif %}
+                                {% elif event.event_date > now and (not event.max_participants or event.registrations.filter_by(status='approved').count() < event.max_participants) %}
+                                    <span class="badge badge-info">Kayıt Açık</span>
+                                {% endif %}
+                            {% elif event.event_date > now %}
+                                <span class="badge badge-info">Kayıt Açık</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if pagination %}
+            <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 0.5rem;">
+                {% if pagination.has_prev %}
+                    <a href="{{ url_for('events.index', page=pagination.prev_num, filter=filter_type) }}" 
+                       class="btn btn-secondary btn-sm">⬅️ Önceki</a>
+                {% endif %}
+                
+                <span style="padding: 0.5rem 1rem; color: var(--text-gray);">
+                    Sayfa {{ pagination.page }} / {{ pagination.pages }}
+                </span>
+                
+                {% if pagination.has_next %}
+                    <a href="{{ url_for('events.index', page=pagination.next_num, filter=filter_type) }}" 
+                       class="btn btn-secondary btn-sm">Sonraki ➡️</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="card text-center">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📭</div>
+                <h3 class="card-title">Henüz Etkinlik Yok</h3>
+                <p class="card-text">
+                    {% if filter_type == 'upcoming' %}
+                        Yaklaşan dönemde planlanmış bir etkinlik bulunmuyor.
+                    {% elif filter_type == 'past' %}
+                        Geçmiş etkinlik kaydı bulunmuyor.
+                    {% else %}
+                        Henüz hiç etkinlik eklenmemiş.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">Ana Sayfaya Dön</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not current_user.is_authenticated %}
+<section style="padding: 4rem 0; background: linear-gradient(135deg, var(--space-blue) 0%, var(--space-purple) 100%);">
+    <div class="container text-center">
+        <h2 style="font-size: 2rem; color: var(--text-light); margin-bottom: 1rem;">
+            Etkinliklere Katılmak İçin Üye Olun! 🚀
+        </h2>
+        <p style="color: var(--text-gray); max-width: 600px; margin: 0 auto 2rem;">
+            Ücretsiz üye olarak tüm etkinliklerimize kayıt olabilir ve astronomi dünyasına adım atabilirsiniz!
+        </p>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="font-size: 1.1rem;">
+            Hemen Üye Ol
+        </a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

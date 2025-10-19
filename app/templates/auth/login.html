@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş Yap - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0; min-height: 70vh; display: flex; align-items: center;">
+    <div class="container">
+        <div style="max-width: 500px; margin: 0 auto;">
+            <div class="card">
+                <div class="text-center mb-3">
+                    {% if site_settings.get('site_logo') %}
+                    <img src="{{ site_settings.get('site_logo') }}" 
+                         alt="Logo" 
+                         style="max-width: 200px; height: auto; margin-bottom: 1rem;">
+                    {% endif %}
+                    <h1 style="font-size: 2rem; color: var(--star-yellow); margin-bottom: 0.5rem;">
+                        🌌 Giriş Yap
+                    </h1>
+                    <p style="color: var(--text-gray);">
+                        ATAK Kulübü hesabınıza giriş yapın
+                    </p>
+                </div>
+                
+                <form method="POST" data-validate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control", placeholder="Kullanıcı adınız", autofocus=true) }}
+                        {% if form.username.errors %}
+                            {% for error in form.username.errors %}
+                                <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", placeholder="Şifreniz") }}
+                        {% if form.password.errors %}
+                            {% for error in form.password.errors %}
+                                <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form.remember(class="form-check-input") }}
+                            {{ form.remember.label(class="form-check-label") }}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        🚀 Giriş Yap
+                    </button>
+                </form>
+                
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-glow); text-align: center;">
+                    <p style="color: var(--text-gray);">
+                        Hesabınız yok mu? 
+                        <a href="{{ url_for('auth.register') }}" style="color: var(--cosmic-cyan); text-decoration: none; font-weight: 600;">
+                            Kayıt Ol
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

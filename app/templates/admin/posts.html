@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Yazılar - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>📝 Yazı Yönetimi</h1>
+        <p>Blog yazılarını yönetin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-primary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 0;">
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>📝 Yazı Yönetimi</h2>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('admin.blog_settings') }}" class="btn btn-secondary">
+                    ⚙️ Blog Ayarları
+                </a>
+                {% if current_user.can('manage_content') %}
+                <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary">+ Yeni Yazı</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Yazar</th>
+                            <th>Kategori</th>
+                            <th>Görüntülenme</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in posts.items %}
+                        <tr>
+                            <td>
+                                <strong>{{ post.title }}</strong>
+                                {% if post.is_featured %}
+                                <span class="badge" style="background: var(--star-yellow);">⭐ Öne Çıkan</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ post.author.username }}</td>
+                            <td>
+                                {% if post.category %}
+                                <span class="badge" style="background: var(--cosmic-purple);">{{ post.category }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>{{ post.views }}</td>
+                            <td>
+                                {% if post.is_published %}
+                                    <span class="badge" style="background: var(--success);">Yayında</span>
+                                {% else %}
+                                    <span class="badge" style="background: var(--warning);">Taslak</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ post.published_at.strftime('%d.%m.%Y') if post.published_at else post.created_at.strftime('%d.%m.%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('blog.detail', slug=post.slug) }}" class="btn btn-sm btn-primary">
+                                    👁️ Görüntüle
+                                </a>
+                                {% if current_user.has_permission('edit_post') or post.author_id == current_user.id %}
+                                <a href="{{ url_for('blog.edit_post', slug=post.slug) }}" class="btn btn-sm btn-secondary">
+                                    ✏️ Düzenle
+                                </a>
+                                {% endif %}
+                                {% if current_user.has_permission('delete_post') or post.author_id == current_user.id %}
+                                <form method="POST" action="{{ url_for('blog.delete_post', slug=post.slug) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('Bu yazıyı silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">🗑️ Sil</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">Yazı bulunamadı</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if posts.pages > 1 %}
+            <div class="pagination" style="margin-top: 2rem;">
+                {% if posts.has_prev %}
+                <a href="{{ url_for('admin.posts', page=posts.prev_num) }}" class="btn btn-secondary">← Önceki</a>
+                {% endif %}
+                
+                <span style="margin: 0 1rem;">Sayfa {{ posts.page }} / {{ posts.pages }}</span>
+                
+                {% if posts.has_next %}
+                <a href="{{ url_for('admin.posts', page=posts.next_num) }}" class="btn btn-secondary">Sonraki →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

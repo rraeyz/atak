@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Event Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>{{ event.title }}</h1>
+        <p>📅 {{ event.start_date.strftime('%d %B %Y, %H:%M') }}</p>
+    </div>
+</section>
+
+<!-- Event Content -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div class="grid grid-2">
+            <!-- Main Content -->
+            <div>
+                {% if event.image %}
+                <img src="{{ url_for('static', filename='uploads/' + event.image) }}" 
+                     alt="{{ event.title }}" 
+                     style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 2rem;">
+                {% endif %}
+                
+                <div class="card">
+                    <h2 class="card-title">📖 Etkinlik Hakkında</h2>
+                    <div class="card-text" style="line-height: 1.8; white-space: pre-wrap;">{{ event.description }}</div>
+                </div>
+                
+                {% if event.content %}
+                <div class="card mt-3">
+                    <h3 class="card-title">📝 Detaylı Açıklama</h3>
+                    <div class="card-text" style="line-height: 1.8; white-space: pre-wrap;">{{ event.content }}</div>
+                </div>
+                {% endif %}
+                
+                <!-- Comments/Notes Section -->
+                <div class="card mt-3">
+                    <h3 class="card-title">💬 Notlar</h3>
+                    {% if event.notes %}
+                        <div class="card-text" style="line-height: 1.8; white-space: pre-wrap;">{{ event.notes }}</div>
+                    {% else %}
+                        <p style="color: var(--text-gray);">Bu etkinlik için ek not bulunmuyor.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div>
+                <!-- Event Info Card -->
+                <div class="card">
+                    <h3 class="card-title">ℹ️ Etkinlik Bilgileri</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                        <div style="padding: 1rem; background: rgba(30, 58, 138, 0.1); border-radius: 8px;">
+                            <strong style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">📅 Başlangıç</strong>
+                            <span style="color: var(--text-gray);">{{ event.event_date.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        
+                        {% if event.end_date %}
+                        <div style="padding: 1rem; background: rgba(30, 58, 138, 0.1); border-radius: 8px;">
+                            <strong style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">⏰ Bitiş</strong>
+                            <span style="color: var(--text-gray);">{{ event.end_date.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div style="padding: 1rem; background: rgba(30, 58, 138, 0.1); border-radius: 8px;">
+                            <strong style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">📍 Konum</strong>
+                            <span style="color: var(--text-gray);">{{ event.location }}</span>
+                        </div>
+                        
+                        {% if event.max_participants %}
+                        <div style="padding: 1rem; background: rgba(30, 58, 138, 0.1); border-radius: 8px;">
+                            <strong style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">👥 Katılımcı</strong>
+                            <span style="color: var(--text-gray);">
+                                {{ event.registrations.filter_by(status='approved').count() }} / {{ event.max_participants }} kişi
+                            </span>
+                            {% set percentage = (event.registrations.filter_by(status='approved').count() / event.max_participants * 100) if event.max_participants > 0 else 0 %}
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 0.5rem; overflow: hidden;">
+                                <div class="progress-bar" style="--progress-width: {{ percentage }}%;"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if event.organizer %}
+                        <div style="padding: 1rem; background: rgba(30, 58, 138, 0.1); border-radius: 8px;">
+                            <strong style="color: var(--text-light); display: block; margin-bottom: 0.5rem;">👤 Organizatör</strong>
+                            <span style="color: var(--text-gray);">{{ event.organizer }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Registration Card -->
+                <div class="card mt-3">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_approved %}
+                            {% set user_registration = event.registrations.filter_by(user_id=current_user.id).first() %}
+                            
+                            {% if user_registration %}
+                                {% if user_registration.status == 'approved' %}
+                                    <div class="alert alert-success">
+                                        <strong>✓ Kayıt Onaylandı!</strong><br>
+                                        Bu etkinliğe katılım kaydınız onaylanmıştır.
+                                    </div>
+                                    <form method="POST" action="{{ url_for('events.cancel_registration', id=event.id) }}" 
+                                          onsubmit="return confirm('Kaydınızı iptal etmek istediğinizden emin misiniz?');">
+                                        <button type="submit" class="btn btn-danger" style="width: 100%;">
+                                            ❌ Kaydı İptal Et
+                                        </button>
+                                    </form>
+                                {% elif user_registration.status == 'pending' %}
+                                    <div class="alert alert-warning">
+                                        <strong>⏳ Onay Bekleniyor</strong><br>
+                                        Kaydınız yönetici onayı bekliyor.
+                                    </div>
+                                    <form method="POST" action="{{ url_for('events.cancel_registration', id=event.id) }}" 
+                                          onsubmit="return confirm('Kaydınızı iptal etmek istediğinizden emin misiniz?');">
+                                        <button type="submit" class="btn btn-danger" style="width: 100%;">
+                                            ❌ Kaydı İptal Et
+                                        </button>
+                                    </form>
+                                {% elif user_registration.status == 'rejected' %}
+                                    <div class="alert alert-danger">
+                                        <strong>✗ Kayıt Reddedildi</strong><br>
+                                        Kaydınız yönetici tarafından reddedilmiştir.
+                                    </div>
+                                {% elif user_registration.status == 'cancelled' %}
+                                    <div class="alert alert-info">
+                                        <strong>📝 Kayıt İptal Edildi</strong><br>
+                                        Bu etkinliğe daha önce kayıt olmuştunuz ancak iptal ettiniz.
+                                    </div>
+                                    {% if event.start_date > now and (not event.max_participants or event.registrations.filter_by(status='approved').count() < event.max_participants) %}
+                                        <form method="POST" action="{{ url_for('events.register', id=event.id) }}">
+                                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                                ✨ Tekrar Kayıt Ol
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% elif event.start_date > now %}
+                                {% if event.max_participants and event.registrations.filter_by(status='approved').count() >= event.max_participants %}
+                                    <div class="alert alert-warning">
+                                        <strong>⚠️ Kontenjan Dolu</strong><br>
+                                        Bu etkinlik için kontenjan dolmuştur.
+                                    </div>
+                                {% else %}
+                                    <h3 class="card-title">🎫 Etkinliğe Kayıt Ol</h3>
+                                    <p style="color: var(--text-gray); margin-bottom: 1rem;">
+                                        Bu etkinliğe katılmak için aşağıdaki butona tıklayın.
+                                    </p>
+                                    <form method="POST" action="{{ url_for('events.register', id=event.id) }}">
+                                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                            ✨ Hemen Kayıt Ol
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <strong>⏰ Etkinlik Başladı/Bitti</strong><br>
+                                    Bu etkinlik için kayıt süresi dolmuştur.
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <strong>⏳ Hesap Onayı Bekleniyor</strong><br>
+                                Etkinliklere kayıt olmak için hesabınızın yönetici tarafından onaylanması gerekmektedir.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <h3 class="card-title">🎫 Etkinliğe Kayıt Ol</h3>
+                        <p style="color: var(--text-gray); margin-bottom: 1rem;">
+                            Etkinliğe kayıt olmak için giriş yapmanız gerekmektedir.
+                        </p>
+                        <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">
+                            🔑 Giriş Yap
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary" style="width: 100%;">
+                            ✨ Kayıt Ol
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Share Card -->
+                <div class="card mt-3">
+                    <h3 class="card-title">🔗 Paylaş</h3>
+                    <p style="color: var(--text-gray); margin-bottom: 1rem;">Bu etkinliği arkadaşlarınızla paylaşın!</p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('{{ request.url }}')">
+                            📋 Linki Kopyala
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Similar Events -->
+{% if similar_events %}
+<section style="padding: 4rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <h2 style="font-size: 2rem; color: var(--star-yellow); text-align: center; margin-bottom: 2rem;">
+            Benzer Etkinlikler
+        </h2>
+        <div class="grid grid-3">
+            {% for similar in similar_events %}
+            <div class="card">
+                <h3 style="font-size: 1.2rem; color: var(--star-yellow); margin-bottom: 0.5rem;">
+                    {{ similar.title }}
+                </h3>
+                <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 1rem;">
+                    📅 {{ similar.start_date.strftime('%d.%m.%Y') }}
+                </p>
+                <a href="{{ url_for('events.detail', id=similar.id) }}" class="btn btn-primary btn-sm">
+                    Detaylar
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Link kopyalandı!', 'success');
+    }).catch(() => {
+        showNotification('Link kopyalanamadı', 'danger');
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

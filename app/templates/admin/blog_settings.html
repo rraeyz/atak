@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Blog Ayarları - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>📝 Blog ve Yorum Ayarları</h1>
+        <p>Blog ve yorum ayarlarını düzenleyin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-primary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>Blog ve Yorum Ayarları</h2>
+        <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Geri Dön
+        </a>
+    </div>
+
+    <div class="card">
+        <div style="padding: 1.5rem;">
+            <form method="POST">
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox" name="auto_approve" id="auto_approve" 
+                               class="form-check-input" {% if auto_approve %}checked{% endif %}>
+                        <label for="auto_approve" class="form-check-label">
+                            <strong>Yorumları Otomatik Onayla</strong>
+                            <br>
+                            <small style="color: var(--text-gray);">
+                                Açık olduğunda yorumlar otomatik onaylanır. Kapalı olduğunda moderatör onayı gerekir.
+                            </small>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <strong>Yasaklı Kelimeler (Kara Liste)</strong>
+                    </label>
+                    <textarea name="blacklist" class="form-control" rows="5" 
+                              placeholder="spam, reklam, kötü, hakaret (virgülle ayırın)">{{ blacklist }}</textarea>
+                    <small style="color: var(--text-gray); display: block; margin-top: 0.5rem;">
+                        Bu kelimeleri içeren yorumlar otomatik olarak reddedilir. Kelimeleri virgülle ayırın.
+                        <br>
+                        <strong>Dikkat:</strong> Küçük/büyük harf duyarlı değildir ve Türkçe karakterler dikkate alınır.
+                    </small>
+                </div>
+                
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">
+                        💾 Ayarları Kaydet
+                    </button>
+                    <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">
+                        ← Yazılara Dön
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

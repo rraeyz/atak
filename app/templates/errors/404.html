@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Sayfa Bulunamadı{% endblock %}
+
+{% block content %}
+<section style="padding: 6rem 0; min-height: 70vh; display: flex; align-items: center;">
+    <div class="container">
+        <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <div style="font-size: 8rem; margin-bottom: 1rem;">🔭</div>
+            <h1 style="font-size: 6rem; color: var(--star-yellow); margin-bottom: 1rem;">404</h1>
+            <h2 style="font-size: 2rem; color: var(--text-light); margin-bottom: 1.5rem;">
+                Uzayın Derinliklerinde Kayboldunuz!
+            </h2>
+            <p style="color: var(--text-gray); font-size: 1.2rem; margin-bottom: 3rem;">
+                Aradığınız sayfa galaksinin ötesine gitti veya hiç var olmadı. 
+                Endişelenmeyin, sizi ana üsse geri götürebiliriz!
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                    🏠 Ana Sayfaya Dön
+                </a>
+                <a href="javascript:history.back()" class="btn btn-secondary">
+                    ⬅️ Geri Git
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

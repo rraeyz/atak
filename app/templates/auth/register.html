@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt Ol - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0; min-height: 70vh; display: flex; align-items: center;">
+    <div class="container">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <div class="card">
+                <div class="text-center mb-3">
+                    {% if site_settings.get('site_logo') %}
+                    <img src="{{ site_settings.get('site_logo') }}" 
+                         alt="Logo" 
+                         style="max-width: 200px; height: auto; margin-bottom: 1rem;">
+                    {% endif %}
+                    <h1 style="font-size: 2rem; color: var(--star-yellow); margin-bottom: 0.5rem;">
+                        🚀 Kayıt Ol
+                    </h1>
+                    <p style="color: var(--text-gray);">
+                        ATAK Kulübü ailesine katılın!
+                    </p>
+                </div>
+                
+                <form method="POST" data-validate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control", placeholder="Kullanıcı adınız", autofocus=true) }}
+                            {% if form.username.errors %}
+                                {% for error in form.username.errors %}
+                                    <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control", placeholder="ornek@email.com") }}
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                    <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            {{ form.first_name.label(class="form-label") }}
+                            {{ form.first_name(class="form-control", placeholder="Adınız") }}
+                            {% if form.first_name.errors %}
+                                {% for error in form.first_name.errors %}
+                                    <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.last_name.label(class="form-label") }}
+                            {{ form.last_name(class="form-control", placeholder="Soyadınız") }}
+                            {% if form.last_name.errors %}
+                                {% for error in form.last_name.errors %}
+                                    <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control", placeholder="Şifreniz") }}
+                            {% if form.password.errors %}
+                                {% for error in form.password.errors %}
+                                    <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {{ form.confirm_password(class="form-control", placeholder="Şifre tekrarı") }}
+                            {% if form.confirm_password.errors %}
+                                {% for error in form.confirm_password.errors %}
+                                    <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                        <strong>📝 Not:</strong> Kayıt işleminiz tamamlandıktan sonra hesabınız admin onayına gönderilecektir. 
+                        Onay aldıktan sonra tüm özelliklere erişebilirsiniz.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        ✨ Kayıt Ol
+                    </button>
+                </form>
+                
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-glow); text-align: center;">
+                    <p style="color: var(--text-gray);">
+                        Zaten hesabınız var mı? 
+                        <a href="{{ url_for('auth.login') }}" style="color: var(--cosmic-cyan); text-decoration: none; font-weight: 600;">
+                            Giriş Yap
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

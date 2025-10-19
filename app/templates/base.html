@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ATAK - Astronomi ve Uzay Bilimleri Kulübü">
+    <title>{% block title %}ATAK Kulübü{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand" style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if site_settings.get('site_logo') %}
+                    <img src="{{ site_settings.get('site_logo') }}" alt="{{ site_settings.get('site_name', 'ATAK Kulübü') }}" 
+                         style="height: 60px; max-width: 200px; object-fit: contain;">
+                    <span>{{ site_settings.get('site_name', 'ATAK Kulübü') }}</span>
+                {% else %}
+                    <span>🌌 {{ site_settings.get('site_name', 'ATAK Kulübü') }}</span>
+                {% endif %}
+            </a>
+            
+            <button class="navbar-toggle" aria-label="Menüyü Aç">
+                ☰
+            </button>
+            
+            <ul class="navbar-nav">
+                <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Ana Sayfa</a></li>
+                <li><a href="{{ url_for('main.about') }}" class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">Hakkımızda</a></li>
+                <li><a href="{{ url_for('events.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('events') %}active{% endif %}">Etkinlikler</a></li>
+                <li><a href="{{ url_for('blog.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('blog') %}active{% endif %}">Blog</a></li>
+                <li><a href="{{ url_for('main.contact') }}" class="nav-link {% if request.endpoint == 'main.contact' %}active{% endif %}">İletişim</a></li>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.can('manage_users') %}
+                        <li><a href="{{ url_for('admin.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin') %}active{% endif %}">Admin Panel</a></li>
+                    {% endif %}
+                    {% if current_user.can('scan_qr_codes') %}
+                        <li><a href="{{ url_for('security.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('security') %}active{% endif %}">
+                            <i class="fas fa-shield-alt"></i> Güvenlik Paneli
+                        </a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.profile') }}" class="nav-link">{{ current_user.username }}</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Çıkış</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.login') }}" class="nav-link">Giriş</a></li>
+                    <li><a href="{{ url_for('auth.register') }}" class="nav-link btn btn-primary btn-sm">Kayıt Ol</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container" style="margin-top: 1rem;" id="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="animation: slideInDown 0.4s ease;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            <script>
+                // Flash mesajına yumuşak scroll (eğer sayfa başındaysa atlama)
+                setTimeout(function() {
+                    const scrollPos = parseInt(sessionStorage.getItem('scrollPosition') || '0');
+                    if (scrollPos < 100) {
+                        // Sayfa başındaysa flash mesajına scroll etme
+                        return;
+                    }
+                }, 50);
+            </script>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>{{ site_settings.get('site_name', 'ATAK Kulübü') }}</h3>
+                    <p>{{ site_settings.get('site_description', 'Astronomi ve Uzay Bilimleri Kulübü') }}</p>
+                    <p>Evrenin sırlarını birlikte keşfedelim! 🌌</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Hızlı Bağlantılar</h3>
+                    <a href="{{ url_for('main.about') }}">Hakkımızda</a>
+                    <a href="{{ url_for('events.index') }}">Etkinlikler</a>
+                    <a href="{{ url_for('blog.index') }}">Blog</a>
+                    <a href="{{ url_for('main.contact') }}">İletişim</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Üyelik</h3>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.profile') }}">Profilim</a>
+                        <a href="{{ url_for('events.my_registrations') }}">Etkinliklerim</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.register') }}">Kayıt Ol</a>
+                        <a href="{{ url_for('auth.login') }}">Giriş Yap</a>
+                    {% endif %}
+                </div>
+                
+                <div class="footer-section">
+                    <h3>İletişim</h3>
+                    {% if site_settings %}
+                        {% if site_settings.contact_email %}
+                            <p>✉️ {{ site_settings.contact_email }}</p>
+                        {% endif %}
+                        {% if site_settings.contact_phone %}
+                            <p>📞 {{ site_settings.contact_phone }}</p>
+                        {% endif %}
+                        {% if site_settings.address %}
+                            <p>📍 {{ site_settings.address }}</p>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Sosyal Medya -->
+                    {% if site_settings %}
+                    <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        {% if site_settings.social_facebook %}
+                        <a href="{{ site_settings.social_facebook }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="Facebook">📘</a>
+                        {% endif %}
+                        {% if site_settings.social_instagram %}
+                        <a href="{{ site_settings.social_instagram }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="Instagram">📷</a>
+                        {% endif %}
+                        {% if site_settings.social_twitter %}
+                        <a href="{{ site_settings.social_twitter }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="Twitter">🐦</a>
+                        {% endif %}
+                        {% if site_settings.social_youtube %}
+                        <a href="{{ site_settings.social_youtube }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="YouTube">▶️</a>
+                        {% endif %}
+                        {% if site_settings.social_linkedin %}
+                        <a href="{{ site_settings.social_linkedin }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="LinkedIn">💼</a>
+                        {% endif %}
+                        {% if site_settings.social_whatsapp %}
+                        <a href="{{ site_settings.social_whatsapp }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="WhatsApp">💬</a>
+                        {% endif %}
+                        {% if site_settings.social_telegram %}
+                        <a href="{{ site_settings.social_telegram }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="Telegram">✈️</a>
+                        {% endif %}
+                        {% if site_settings.social_discord %}
+                        <a href="{{ site_settings.social_discord }}" target="_blank" rel="noopener" 
+                           style="font-size: 1.5rem;" title="Discord">🎮</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 {{ site_settings.get('site_name', 'ATAK Kulübü') }}. Tüm hakları saklıdır.</p>
+                <p>Yıldızlara ulaşmak için birlikte yükseliyoruz 🚀</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

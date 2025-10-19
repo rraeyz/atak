@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıtlarım - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>✅ Etkinlik Kayıtlarım</h1>
+        <p>Kayıt olduğunuz etkinlikleri görüntüleyin</p>
+    </div>
+</section>
+
+<!-- Registrations List -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        {% if registrations %}
+            <!-- Tabs -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center;">
+                <a href="{{ url_for('events.my_registrations') }}" 
+                   class="btn {% if not status_filter or status_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    📋 Tümü
+                </a>
+                <a href="{{ url_for('events.my_registrations', status='pending') }}" 
+                   class="btn {% if status_filter == 'pending' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    ⏳ Bekleyen
+                </a>
+                <a href="{{ url_for('events.my_registrations', status='approved') }}" 
+                   class="btn {% if status_filter == 'approved' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    ✓ Onaylanan
+                </a>
+                <a href="{{ url_for('events.my_registrations', status='cancelled') }}" 
+                   class="btn {% if status_filter == 'cancelled' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    ❌ İptal Edilen
+                </a>
+            </div>
+            
+            <!-- Registrations -->
+            <div class="grid grid-2">
+                {% for registration in registrations %}
+                <div class="card">
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                        <h3 class="card-title" style="flex: 1;">{{ registration.event.title }}</h3>
+                        <span class="badge 
+                            {% if registration.status == 'approved' %}badge-success
+                            {% elif registration.status == 'pending' %}badge-warning
+                            {% elif registration.status == 'rejected' %}badge-danger
+                            {% else %}badge-info{% endif %}">
+                            {% if registration.status == 'approved' %}✓ Onaylandı
+                            {% elif registration.status == 'pending' %}⏳ Bekliyor
+                            {% elif registration.status == 'rejected' %}✗ Reddedildi
+                            {% elif registration.status == 'cancelled' %}❌ İptal Edildi
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text">{{ registration.event.description[:150] }}{% if registration.event.description|length > 150 %}...{% endif %}</p>
+                    
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-glow);">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; color: var(--text-gray); font-size: 0.9rem;">
+                            <div>📅 Etkinlik: {{ registration.event.start_date.strftime('%d.%m.%Y %H:%M') }}</div>
+                            <div>📍 Konum: {{ registration.event.location }}</div>
+                            <div>🕐 Kayıt: {{ registration.registered_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                            {% if registration.notes %}
+                                <div>📝 Not: {{ registration.notes }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ url_for('events.detail', id=registration.event.id) }}" 
+                               class="btn btn-primary btn-sm" style="flex: 1;">
+                                📖 Etkinlik Detayları
+                            </a>
+                            
+                            {% if registration.status in ['approved', 'pending'] and registration.event.start_date > now %}
+                                <form method="POST" action="{{ url_for('events.cancel_registration', id=registration.event.id) }}"
+                                      onsubmit="return confirm('Kaydınızı iptal etmek istediğinizden emin misiniz?');"
+                                      style="flex: 1;">
+                                    <button type="submit" class="btn btn-danger btn-sm" style="width: 100%;">
+                                        ❌ İptal Et
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card text-center">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📭</div>
+                <h3 class="card-title">Henüz Kayıt Yok</h3>
+                <p class="card-text">
+                    {% if status_filter == 'pending' %}
+                        Onay bekleyen kayıt bulunmuyor.
+                    {% elif status_filter == 'approved' %}
+                        Onaylanmış kayıt bulunmuyor.
+                    {% elif status_filter == 'cancelled' %}
+                        İptal edilmiş kayıt bulunmuyor.
+                    {% else %}
+                        Henüz hiçbir etkinliğe kayıt olmadınız.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('events.index') }}" class="btn btn-primary">Etkinliklere Göz At</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

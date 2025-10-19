@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Roller - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>🔐 Rol Yönetimi</h1>
+        <p>Rolleri ve yetkilerini yönetin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-primary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 0;">
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>🎭 Roller ve Yetkiler</h2>
+            {% if current_user.can('manage_roles') %}
+            <a href="{{ url_for('admin.create_role') }}" class="btn btn-primary">+ Yeni Rol</a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Rol Adı</th>
+                            <th>Açıklama</th>
+                            <th>Kullanıcı Sayısı</th>
+                            <th>Sistem Rolü</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for role in roles %}
+                        <tr>
+                            <td><strong>{{ role.display_name }}</strong></td>
+                            <td>{{ role.description or '-' }}</td>
+                            <td>{{ role.users.count() }}</td>
+                            <td>
+                                {% if role.is_system %}
+                                    <span class="badge" style="background: var(--cosmic-purple);">Sistem</span>
+                                {% else %}
+                                    <span class="badge" style="background: var(--nebula-pink);">Özel</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if current_user.can('manage_roles') %}
+                                <a href="{{ url_for('admin.edit_role', id=role.id) }}" class="btn btn-sm btn-secondary">
+                                    ✏️ Düzenle
+                                </a>
+                                {% if not role.is_system %}
+                                <form method="POST" action="{{ url_for('admin.delete_role', id=role.id) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('Bu rolü silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">🗑️ Sil</button>
+                                </form>
+                                {% endif %}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Rol bulunamadı</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

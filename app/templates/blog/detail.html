@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Post Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>{{ post.title }}</h1>
+        <p>
+            👤 {{ post.author.username }} • 
+            📅 {{ post.created_at.strftime('%d %B %Y') }}
+        </p>
+    </div>
+</section>
+
+<!-- Post Content -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div style="max-width: 900px; margin: 0 auto;">
+            <!-- Post Image -->
+            {% if post.image %}
+            <img src="{{ url_for('static', filename='uploads/' + post.image) }}" 
+                 alt="{{ post.title }}" 
+                 style="width: 100%; height: 500px; object-fit: cover; border-radius: 12px; margin-bottom: 2rem;">
+            {% endif %}
+            
+            <!-- Post Content -->
+            <div class="card">
+                <div class="card-text" style="line-height: 1.8; font-size: 1.1rem; white-space: pre-wrap;">
+                    {{ post.content }}
+                </div>
+            </div>
+            
+            <!-- Post Meta -->
+            <div class="card mt-3">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-gray);">
+                            <span>👤</span>
+                            <a href="{{ url_for('auth.profile', user_id=post.author.id) }}" 
+                               style="color: var(--cosmic-cyan); text-decoration: none;">
+                                {{ post.author.first_name }} {{ post.author.last_name }}
+                            </a>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-gray);">
+                            <span>📅</span>
+                            <span>{{ post.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        {% if post.updated_at and post.updated_at != post.created_at %}
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-gray);">
+                            <span>✏️</span>
+                            <span>Güncellendi: {{ post.updated_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.has_permission('edit_post')) %}
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('blog.edit_post', slug=post.slug) }}" class="btn btn-secondary btn-sm">
+                            ✏️ Düzenle
+                        </a>
+                        {% if current_user.id == post.author_id or current_user.has_permission('delete_post') %}
+                        <form method="POST" action="{{ url_for('blog.delete_post', slug=post.slug) }}" 
+                              onsubmit="return confirm('Bu yazıyı silmek istediğinizden emin misiniz?');" 
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                🗑️ Sil
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Comments Section -->
+            <div class="card mt-4">
+                <h3 class="card-title">💬 Yorumlar ({{ comments|length }})</h3>
+                
+                <!-- Comment Form -->
+                {% if current_user.is_authenticated and current_user.is_approved %}
+                <form method="POST" action="{{ url_for('blog.add_comment', slug=post.slug) }}" 
+                      data-validate style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-glow);">
+                    <div class="form-group">
+                        <label class="form-label">Yorum Yazın</label>
+                        <textarea name="content" class="form-control" rows="4" 
+                                  placeholder="Düşüncelerinizi paylaşın..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        💬 Yorum Yap
+                    </button>
+                </form>
+                {% elif not current_user.is_authenticated %}
+                <div class="alert alert-info" style="margin-bottom: 2rem;">
+                    Yorum yapmak için <a href="{{ url_for('auth.login', next=request.path) }}" 
+                       style="color: var(--cosmic-cyan); text-decoration: none; font-weight: 600;">giriş yapın</a> 
+                    veya <a href="{{ url_for('auth.register') }}" 
+                       style="color: var(--cosmic-cyan); text-decoration: none; font-weight: 600;">kayıt olun</a>.
+                </div>
+                {% elif not current_user.is_approved %}
+                <div class="alert alert-warning" style="margin-bottom: 2rem;">
+                    Yorum yapmak için hesabınızın onaylanması gerekmektedir.
+                </div>
+                {% endif %}
+                
+                <!-- Comments List -->
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="{% if not comment.is_approved %}unapproved-comment{% endif %}" 
+                         style="padding: 1.5rem; background: rgba(30, 58, 138, 0.05); border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div>
+                                <a href="{{ url_for('auth.profile', user_id=comment.author.id) }}" 
+                                   style="color: var(--cosmic-cyan); text-decoration: none; font-weight: 600;">
+                                    {{ comment.author.username }}
+                                </a>
+                                {% if not comment.is_approved %}
+                                    <span class="badge" style="background: var(--warning); margin-left: 0.5rem;">Onay Bekliyor</span>
+                                {% endif %}
+                                <br>
+                                <small style="color: var(--text-gray);">
+                                    {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                </small>
+                            </div>
+                            
+                            <!-- Moderasyon Butonları -->
+                            <div style="display: flex; gap: 0.5rem;">
+                                {% if current_user.is_authenticated %}
+                                    <!-- Moderatör İşlemleri -->
+                                    {% if current_user.has_permission('moderate_comments') %}
+                                        {% if not comment.is_approved %}
+                                        <form method="POST" action="{{ url_for('blog.approve_comment', id=comment.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-success btn-sm" title="Yorumu Onayla">
+                                                ✓
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('blog.reject_comment', id=comment.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Yorumu Reddet">
+                                                ✗
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <form method="POST" action="{{ url_for('blog.reject_comment', id=comment.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Onayı Kaldır">
+                                                ⚠
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    <!-- Silme Butonu (Yorum sahibi veya moderatör) -->
+                                    {% if current_user.id == comment.author_id or current_user.has_permission('moderate_comments') %}
+                                    <form method="POST" action="{{ url_for('blog.delete_comment', id=comment.id) }}"
+                                          onsubmit="return confirm('Bu yorumu silmek istediğinizden emin misiniz?');" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Yorumu Sil">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p style="color: var(--text-light); line-height: 1.6; white-space: pre-wrap;">{{ comment.content }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--text-gray); text-align: center;">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Posts -->
+{% if related_posts %}
+<section style="padding: 4rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <h2 style="font-size: 2rem; color: var(--star-yellow); text-align: center; margin-bottom: 2rem;">
+            İlgili Yazılar
+        </h2>
+        <div class="grid grid-3">
+            {% for related in related_posts %}
+            <div class="card">
+                <h3 style="font-size: 1.1rem; color: var(--star-yellow); margin-bottom: 0.5rem;">
+                    {{ related.title }}
+                </h3>
+                <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 1rem;">
+                    {{ related.content[:100] }}...
+                </p>
+                <a href="{{ url_for('blog.detail', slug=related.slug) }}" class="btn btn-primary btn-sm">
+                    Oku
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

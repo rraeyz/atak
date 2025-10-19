@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{% if announcement %}Duyuru Düzenle{% else %}Yeni Duyuru{% endif %} - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>{% if announcement %}📝 Duyuru Düzenle{% else %}➕ Yeni Duyuru{% endif %}</h1>
+        <p>Duyuru oluşturun veya düzenleyin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-primary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>{% if announcement %}Duyuru Düzenle{% else %}Yeni Duyuru{% endif %}</h2>
+        <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Geri Dön
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <div>
+            <div class="card">
+                <div style="padding: 1.5rem;">
+                    <form method="POST">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label for="title" class="form-label">Başlık *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="title" 
+                                   name="title" 
+                                   value="{{ announcement.title if announcement else '' }}" 
+                                   required>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label for="content" class="form-label">İçerik *</label>
+                            <textarea class="form-control" 
+                                      id="content" 
+                                      name="content" 
+                                      rows="8" 
+                                      required>{{ announcement.content if announcement else '' }}</textarea>
+                            <small style="color: #6c757d;">Duyuru içeriği. Markdown desteklenir.</small>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label class="form-label">Hedef Roller</label>
+                            <div style="color: #6c757d; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                                Duyurunun hangi rollere görüneceğini seçin. Hiçbir rol seçilmezse tüm kullanıcılara görünür olacaktır.
+                            </div>
+                            {% for role in roles %}
+                            <div style="margin-bottom: 0.5rem;">
+                                <input type="checkbox" 
+                                       name="target_roles" 
+                                       value="{{ role.id }}" 
+                                       id="role_{{ role.id }}"
+                                       {% if announcement and selected_roles and role.id in selected_roles %}checked{% endif %}>
+                                <label for="role_{{ role.id }}" style="margin-left: 0.5rem;">
+                                    {{ role.display_name }}
+                                    <small style="color: #6c757d;">- {{ role.description }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <hr>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <div>
+                                <input type="checkbox" 
+                                       id="is_published" 
+                                       name="is_published"
+                                       {% if not announcement or announcement.is_published %}checked{% endif %}>
+                                <label for="is_published" style="margin-left: 0.5rem;">
+                                    Duyuruyu Yayınla
+                                </label>
+                                <div style="color: #6c757d; margin-top: 0.25rem; font-size: 0.875rem;">
+                                    Kapalıysa duyuru taslak olarak saklanır ve kullanıcılara gösterilmez.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <div>
+                                <input type="checkbox" 
+                                       id="send_email" 
+                                       name="send_email"
+                                       {% if announcement and announcement.send_email %}checked{% endif %}>
+                                <label for="send_email" style="margin-left: 0.5rem;">
+                                    E-posta Gönder
+                                </label>
+                                <div style="color: #6c757d; margin-top: 0.25rem; font-size: 0.875rem;">
+                                    Açıksa duyuru hedef kullanıcılara e-posta ile de gönderilir.
+                                    {% if announcement and announcement.email_sent %}
+                                        <span style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">E-posta gönderildi</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div style="padding: 1rem 1.5rem; background: rgba(30, 58, 138, 0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h5 style="margin: 0; font-size: 1rem;">
+                        <i class="fas fa-info-circle"></i> Bilgi
+                    </h5>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <h6>Hedef Roller</h6>
+                    <p style="font-size: 0.875rem; color: #6c757d;">
+                        Duyuru sadece seçtiğiniz rollere sahip kullanıcılara gösterilir. 
+                        Hiçbir rol seçmezseniz tüm kullanıcılara gösterilir.
+                    </p>
+
+                    <h6>E-posta Gönderimi</h6>
+                    <p style="font-size: 0.875rem; color: #6c757d;">
+                        E-posta gönder seçeneği açıksa, duyuru hedef kullanıcılara 
+                        otomatik olarak e-posta ile gönderilir. Bu işlem yalnızca bir kez yapılır.
+                    </p>
+
+                    <h6>Yayın Durumu</h6>
+                    <p style="font-size: 0.875rem; color: #6c757d;">
+                        Duyuru yayınlanmadığı sürece kullanıcılara gösterilmez. 
+                        Taslak olarak saklayıp daha sonra yayınlayabilirsiniz.
+                    </p>
+
+                    {% if announcement %}
+                    <hr>
+                    <h6>Duyuru Bilgileri</h6>
+                    <ul style="list-style: none; padding: 0; font-size: 0.875rem;">
+                        <li><strong>Oluşturan:</strong> {{ announcement.creator.full_name }}</li>
+                        <li><strong>Oluşturulma:</strong> {{ announcement.created_at.strftime('%d.%m.%Y %H:%M') }}</li>
+                        {% if announcement.updated_at != announcement.created_at %}
+                        <li><strong>Güncelleme:</strong> {{ announcement.updated_at.strftime('%d.%m.%Y %H:%M') }}</li>
+                        {% endif %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

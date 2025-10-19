@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Profil - {{ user.username }} - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>👤 {{ user.username }}</h1>
+        <p>Kullanıcı Profili</p>
+    </div>
+</section>
+
+<!-- Profile Content -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div class="grid grid-2">
+            <!-- Profile Info -->
+            <div>
+                <div class="card">
+                    <div class="text-center mb-3">
+                        {% if user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
+                                 alt="{{ user.username }}" 
+                                 style="width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--border-glow); object-fit: cover;">
+                        {% else %}
+                            <div style="width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, var(--cosmic-cyan), var(--space-blue)); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 4rem;">
+                                {{ user.username[0].upper() }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h2 class="card-title text-center">{{ user.first_name }} {{ user.last_name }}</h2>
+                    <p class="text-center" style="color: var(--text-gray);">@{{ user.username }}</p>
+                    
+                    {% if user.role %}
+                        <div class="text-center mt-2">
+                            <span class="badge badge-primary">{{ user.role.name }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-glow);">
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span style="color: var(--text-gray);">E-posta:</span>
+                            <strong style="color: var(--text-light);">{{ user.email }}</strong>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span style="color: var(--text-gray);">Durum:</span>
+                            {% if user.is_approved %}
+                                <span class="badge badge-success">✓ Onaylı</span>
+                            {% else %}
+                                <span class="badge badge-warning">⏳ Onay Bekliyor</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span style="color: var(--text-gray);">Üyelik Tarihi:</span>
+                            <strong style="color: var(--text-light);">{{ user.created_at.strftime('%d.%m.%Y') }}</strong>
+                        </div>
+                    </div>
+                    
+                    {% if current_user.id == user.id %}
+                        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-primary" style="flex: 1;">
+                                ✏️ Profili Düzenle
+                            </a>
+                            <a href="{{ url_for('auth.change_password') }}" class="btn btn-secondary" style="flex: 1;">
+                                🔒 Şifre Değiştir
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if user.bio %}
+                <div class="card mt-3">
+                    <h3 class="card-title">Hakkında</h3>
+                    <p class="card-text">{{ user.bio }}</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Activity -->
+            <div>
+                <!-- User Stats -->
+                <div class="card">
+                    <h3 class="card-title">İstatistikler</h3>
+                    <div class="grid grid-3">
+                        <div class="text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--star-yellow);">
+                                {{ user.event_registrations.count() }}
+                            </div>
+                            <p style="color: var(--text-gray); font-size: 0.875rem;">Etkinlik Katılımı</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--cosmic-cyan);">
+                                {{ user.posts.count() }}
+                            </div>
+                            <p style="color: var(--text-gray); font-size: 0.875rem;">Blog Yazısı</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--nebula-pink);">
+                                {{ user.comments.count() }}
+                            </div>
+                            <p style="color: var(--text-gray); font-size: 0.875rem;">Yorum</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Güvenlik Paneli - Sadece güvenlik rolü olanlar için -->
+                {% if current_user.id == user.id and current_user.can('scan_qr_codes') %}
+                <div class="card mt-3" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 2px solid var(--cosmic-cyan);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="font-size: 2.5rem;">🛡️</div>
+                        <div>
+                            <h3 class="card-title" style="margin: 0; color: var(--cosmic-cyan);">Güvenlik Paneli</h3>
+                            <p style="color: var(--text-gray); font-size: 0.875rem; margin: 0.25rem 0 0 0;">
+                                QR kod okutma ve etkinlik kontrol sistemi
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                        Etkinlik girişlerinde QR kod okutma yetkisine sahipsiniz. Güvenlik panelinizden aktif etkinlikleri görüntüleyebilir ve katılımcıların QR kodlarını okutabilirsiniz.
+                    </p>
+                    
+                    <a href="{{ url_for('security.index') }}" class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, var(--cosmic-cyan), var(--space-blue)); font-size: 1.1rem; padding: 0.875rem;">
+                        <i class="fas fa-shield-alt"></i> Güvenlik Paneline Git
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Recent Posts -->
+                {% if user.posts.filter_by(published=True).limit(3).count() > 0 %}
+                <div class="card mt-3">
+                    <h3 class="card-title">Son Blog Yazıları</h3>
+                    {% for post in user.posts.filter_by(published=True).order_by(Post.created_at.desc()).limit(3) %}
+                        <div style="padding: 1rem 0;" class="{% if not loop.last %}border-bottom-glow{% endif %}">
+                            <a href="{{ url_for('blog.detail', id=post.id) }}" 
+                               style="color: var(--text-light); text-decoration: none; font-weight: 600;">
+                                {{ post.title }}
+                            </a>
+                            <br>
+                            <small style="color: var(--text-gray);">
+                                📅 {{ post.created_at.strftime('%d.%m.%Y') }}
+                            </small>
+                        </div>
+                    {% endfor %}
+                    
+                    {% if user.posts.filter_by(published=True).count() > 3 %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('blog.index') }}" class="btn btn-secondary btn-sm">
+                                Tüm Yazıları Gör
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Registered Events (if viewing own profile) -->
+                {% if current_user.id == user.id %}
+                <div class="card mt-3">
+                    <h3 class="card-title">Kayıtlı Olduğum Etkinlikler</h3>
+                    {% set all_registrations = user.event_registrations|list %}
+                    {% set upcoming_registrations = [] %}
+                    {% for reg in all_registrations %}
+                        {% if reg.event %}
+                            {% set event_end = reg.event.end_date if reg.event.end_date else reg.event.event_date %}
+                            {% if event_end and event_end >= now %}
+                                {% set _ = upcoming_registrations.append(reg) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if upcoming_registrations|length > 0 %}
+                        {% for registration in upcoming_registrations[:3] %}
+                            <div style="padding: 1rem 0;" class="{% if not loop.last %}border-bottom-glow{% endif %}">
+                                <a href="{{ url_for('events.detail', id=registration.event.id) }}" 
+                                   style="color: var(--text-light); text-decoration: none; font-weight: 600;">
+                                    {{ registration.event.title }}
+                                </a>
+                                <br>
+                                <small style="color: var(--text-gray);">
+                                    📅 {{ registration.event.start_date.strftime('%d.%m.%Y %H:%M') }}
+                                </small>
+                                <br>
+                                <span class="badge {% if registration.status == 'approved' %}badge-success{% elif registration.status == 'pending' %}badge-warning{% else %}badge-danger{% endif %} mt-1">
+                                    {% if registration.status == 'approved' %}Onaylandı{% elif registration.status == 'pending' %}Beklemede{% else %}Reddedildi{% endif %}
+                                </span>
+                                <!-- QR Kod Butonu -->
+                                {% if registration.status == 'approved' %}
+                                <a href="{{ url_for('events.my_qr_code', registration_id=registration.id) }}" 
+                                   class="btn btn-sm btn-primary mt-1">
+                                    📱 QR Kodum
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="mt-2">
+                            <a href="{{ url_for('events.my_registrations') }}" class="btn btn-secondary btn-sm">
+                                Tüm Kayıtlarım
+                            </a>
+                        </div>
+                    {% else %}
+                        <p style="color: var(--text-gray);">Henüz kayıtlı olduğunuz bir etkinlik yok.</p>
+                        <a href="{{ url_for('events.index') }}" class="btn btn-primary btn-sm mt-2">
+                            Etkinliklere Göz At
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

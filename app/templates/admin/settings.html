@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}Site Ayarları - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>⚙️ Site Ayarları</h1>
+        <p>Genel site ayarlarını düzenleyin</p>
+    </div>
+</section>
+
+<!-- Admin Nav -->
+<section style="padding: 2rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
+            <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
+            <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
+            <a href="{{ url_for('admin.messages') }}" class="btn btn-secondary">📧 Mesajlar</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-primary">⚙️ Ayarlar</a>
+        </div>
+    </div>
+</section>
+
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            
+            <!-- Tab Navigation -->
+            <div style="margin-bottom: 2rem; border-bottom: 2px solid var(--border-glow);">
+                <div style="display: flex; gap: 0; flex-wrap: wrap;">
+                    <button type="button" class="settings-tab active" data-tab="general">
+                        🏢 Genel
+                    </button>
+                    <button type="button" class="settings-tab" data-tab="about">
+                        ℹ️ Hakkımızda
+                    </button>
+                    <button type="button" class="settings-tab" data-tab="contact">
+                        📞 İletişim
+                    </button>
+                    <button type="button" class="settings-tab" data-tab="social">
+                        🌐 Sosyal Medya
+                    </button>
+                    <button type="button" class="settings-tab" data-tab="seo">
+                        🔍 SEO
+                    </button>
+                    <button type="button" class="settings-tab" data-tab="advanced">
+                        ⚙️ Gelişmiş
+                    </button>
+                </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                <!-- Genel Ayarlar Tab -->
+                <div class="settings-content active" data-content="general">
+                    <div class="grid grid-2" style="gap: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title">Site Kimliği</h3>
+                            <div class="form-group">
+                                <label class="form-label">Site Adı</label>
+                                <input type="text" name="setting_site_name" class="form-control" 
+                                       value="{{ settings.get('site_name', 'ATAK Kulübü') }}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Site Açıklaması</label>
+                                <textarea name="setting_site_description" class="form-control" rows="3">{{ settings.get('site_description', '') }}</textarea>
+                                <small style="color: var(--text-gray);">SEO ve sosyal medya için</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🖼️ Site Logosu</label>
+                                
+                                <!-- Mevcut logo önizlemesi -->
+                                {% if settings.get('site_logo') %}
+                                <div style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-dark); border-radius: 8px; text-align: center;">
+                                    <img src="{{ settings.get('site_logo') }}" alt="Mevcut Logo" 
+                                         style="max-height: 80px; max-width: 200px; object-fit: contain;">
+                                    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-gray);">
+                                        Mevcut Logo: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px;">{{ settings.get('site_logo') }}</code>
+                                    </p>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Dosya yükleme -->
+                                <div style="margin-bottom: 1rem;">
+                                    <p style="font-size: 0.9rem; color: var(--text-gray); margin-bottom: 0.5rem;">
+                                        <strong>Seçenek 1:</strong> Bilgisayarınızdan dosya yükleyin
+                                    </p>
+                                    <label class="btn" style="background: var(--primary); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; display: inline-block;">
+                                        📤 Logo Dosyası Yükle
+                                        <input type="file" name="logo_file" accept="image/*" 
+                                               style="display: none;" 
+                                               onchange="document.getElementById('file-name').textContent = this.files[0]?.name || 'Dosya seçilmedi'; document.getElementById('url-input').value = '';">
+                                    </label>
+                                    <span id="file-name" style="margin-left: 1rem; color: var(--text-gray); font-size: 0.9rem;">Dosya seçilmedi</span>
+                                </div>
+                                
+                                <!-- Veya URL -->
+                                <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem;">
+                                    <p style="font-size: 0.9rem; color: var(--text-gray); margin-bottom: 0.5rem;">
+                                        <strong>Seçenek 2:</strong> İnternetten URL ile ekleyin
+                                    </p>
+                                    <input type="text" id="url-input" name="setting_site_logo" class="form-control" 
+                                           value="{{ settings.get('site_logo', '') }}" 
+                                           placeholder="/static/img/logo.png veya https://example.com/logo.png"
+                                           onchange="if(this.value) document.getElementById('file-name').textContent = 'Dosya seçilmedi';">
+                                    <small style="color: var(--text-gray); display: block; margin-top: 0.5rem;">
+                                        💡 <strong>İpucu:</strong> Dosya yüklerseniz, bu alan otomatik doldurulur
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title">Genel Ayarlar</h3>
+                            <div class="form-group">
+                                <label class="form-label">Sayfa Başına Kayıt Sayısı</label>
+                                <input type="number" name="setting_items_per_page" class="form-control" 
+                                       value="{{ settings.get('items_per_page', '10') }}" min="5" max="100">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Kullanıcı Kayıt Onayı</label>
+                                <select name="setting_user_approval_required" class="form-control">
+                                    <option value="true" {% if settings.get('user_approval_required', 'true') == 'true' %}selected{% endif %}>Gerekli</option>
+                                    <option value="false" {% if settings.get('user_approval_required', 'true') == 'false' %}selected{% endif %}>Gerekli Değil</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Site Bakım Modu</label>
+                                <select name="setting_maintenance_mode" class="form-control">
+                                    <option value="false" {% if settings.get('maintenance_mode', 'false') == 'false' %}selected{% endif %}>Kapalı</option>
+                                    <option value="true" {% if settings.get('maintenance_mode', 'false') == 'true' %}selected{% endif %}>Açık</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Bakım Modu Mesajı</label>
+                                <textarea name="setting_maintenance_message" class="form-control" rows="2">{{ settings.get('maintenance_message', 'Site şu anda bakımdadır.') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hakkımızda Tab -->
+                <div class="settings-content" data-content="about">
+                    <div class="grid grid-2" style="gap: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title">Kurumsal Kimlik</h3>
+                            <div class="form-group">
+                                <label class="form-label">📝 Biz Kimiz?</label>
+                                <textarea name="setting_about_intro" class="form-control" rows="5" 
+                                          placeholder="Kulübünüz hakkında tanıtım yazısı...">{{ settings.get('about_intro', '') }}</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🎯 Misyon</label>
+                                <textarea name="setting_about_mission" class="form-control" rows="4" 
+                                          placeholder="Misyonunuz nedir?">{{ settings.get('about_mission', '') }}</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🔭 Vizyon</label>
+                                <textarea name="setting_about_vision" class="form-control" rows="4" 
+                                          placeholder="Vizyonunuz nedir?">{{ settings.get('about_vision', '') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title">💡 İpucu</h3>
+                            <div style="padding: 1rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); border-radius: 8px; border-left: 4px solid var(--primary);">
+                                <p style="margin: 0; line-height: 1.6; color: var(--text-gray);">
+                                    <strong style="color: var(--text-light);">Hakkımızda Sayfası</strong><br>
+                                    Bu alanları doldurarak hakkımızda sayfanızı özelleştirebilirsiniz. 
+                                    Boş bırakırsanız varsayılan içerik görünür.
+                                </p>
+                            </div>
+                            
+                            <div style="margin-top: 2rem; padding: 1rem; background: rgba(234, 179, 8, 0.1); border-radius: 8px; border-left: 4px solid var(--star-yellow);">
+                                <p style="margin: 0; line-height: 1.6; color: var(--text-gray);">
+                                    <strong style="color: var(--text-light);">Yazım İpuçları</strong><br>
+                                    • Misyon: Ne yapıyorsunuz? Amacınız nedir?<br>
+                                    • Vizyon: Gelecekte nereye varmak istiyorsunuz?<br>
+                                    • Kısa ve öz tutun, anlaşılır olsun
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İletişim Tab -->
+                <div class="settings-content" data-content="contact">
+                    <div class="grid grid-2" style="gap: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title">İletişim Bilgileri</h3>
+                            <div class="form-group">
+                                <label class="form-label">✉️ E-posta</label>
+                                <input type="email" name="setting_contact_email" class="form-control" 
+                                       value="{{ settings.get('contact_email', '') }}" placeholder="info@atakkulubu.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">📞 Telefon</label>
+                                <input type="tel" name="setting_contact_phone" class="form-control" 
+                                       value="{{ settings.get('contact_phone', '') }}" placeholder="+90 XXX XXX XX XX">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">📍 Adres</label>
+                                <textarea name="setting_address" class="form-control" rows="3">{{ settings.get('address', '') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); border: 1px solid var(--cosmic-cyan);">
+                            <h3 class="card-title">💡 İpucu</h3>
+                            <p style="color: var(--text-gray); line-height: 1.6;">
+                                Bu bilgiler footer, iletişim sayfası ve diğer önemli alanlarda otomatik olarak gösterilir.
+                            </p>
+                            <p style="color: var(--text-gray); line-height: 1.6; margin-top: 1rem;">
+                                <strong style="color: var(--star-yellow);">Not:</strong> E-posta adresi bildirimler için de kullanılır.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sosyal Medya Tab -->
+                <div class="settings-content" data-content="social">
+                    <div class="grid grid-2" style="gap: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title">Sosyal Platformlar</h3>
+                            <div class="form-group">
+                                <label class="form-label">📘 Facebook</label>
+                                <input type="url" name="setting_social_facebook" class="form-control" 
+                                       value="{{ settings.get('social_facebook', '') }}" placeholder="https://facebook.com/atakkulubu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">📷 Instagram</label>
+                                <input type="url" name="setting_social_instagram" class="form-control" 
+                                       value="{{ settings.get('social_instagram', '') }}" placeholder="https://instagram.com/atakkulubu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🐦 Twitter / X</label>
+                                <input type="url" name="setting_social_twitter" class="form-control" 
+                                       value="{{ settings.get('social_twitter', '') }}" placeholder="https://twitter.com/atakkulubu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">💼 LinkedIn</label>
+                                <input type="url" name="setting_social_linkedin" class="form-control" 
+                                       value="{{ settings.get('social_linkedin', '') }}" placeholder="https://linkedin.com/company/atakkulubu">
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title">Mesajlaşma & Topluluk</h3>
+                            <div class="form-group">
+                                <label class="form-label">▶️ YouTube</label>
+                                <input type="url" name="setting_social_youtube" class="form-control" 
+                                       value="{{ settings.get('social_youtube', '') }}" placeholder="https://youtube.com/@atakkulubu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">💬 WhatsApp Grup</label>
+                                <input type="url" name="setting_social_whatsapp" class="form-control" 
+                                       value="{{ settings.get('social_whatsapp', '') }}" placeholder="https://chat.whatsapp.com/...">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">✈️ Telegram</label>
+                                <input type="url" name="setting_social_telegram" class="form-control" 
+                                       value="{{ settings.get('social_telegram', '') }}" placeholder="https://t.me/atakkulubu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🎮 Discord</label>
+                                <input type="url" name="setting_social_discord" class="form-control" 
+                                       value="{{ settings.get('social_discord', '') }}" placeholder="https://discord.gg/...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Tab -->
+                <div class="settings-content" data-content="seo">
+                    <div class="grid grid-2" style="gap: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title">Arama Motoru Optimizasyonu</h3>
+                            <div class="form-group">
+                                <label class="form-label">Meta Anahtar Kelimeler</label>
+                                <input type="text" name="setting_meta_keywords" class="form-control" 
+                                       value="{{ settings.get('meta_keywords', '') }}" placeholder="atak, kulüp, robotik, havacılık">
+                                <small style="color: var(--text-gray);">Virgülle ayırın</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Google Analytics ID</label>
+                                <input type="text" name="setting_google_analytics" class="form-control" 
+                                       value="{{ settings.get('google_analytics', '') }}" placeholder="G-XXXXXXXXXX">
+                                <small style="color: var(--text-gray);">Google Analytics izleme kodu</small>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(234, 88, 12, 0.1)); border: 1px solid var(--star-yellow);">
+                            <h3 class="card-title">🎯 SEO İpuçları</h3>
+                            <ul style="color: var(--text-gray); line-height: 1.8; padding-left: 1.5rem;">
+                                <li>Site açıklamasını 150-160 karakter tutun</li>
+                                <li>Anahtar kelimeleri doğal tutun</li>
+                                <li>Analytics ile istatistikleri takip edin</li>
+                                <li>Düzenli içerik güncelleyin</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gelişmiş Ayarlar Tab -->
+                <div class="settings-content" data-content="advanced">
+                    <div class="card">
+                        <h3 class="card-title">⚠️ Gelişmiş Ayarlar</h3>
+                        <p style="color: var(--text-gray); margin-bottom: 2rem;">
+                            Bu ayarları değiştirirken dikkatli olun.
+                        </p>
+                        
+                        <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 0.5rem;">
+                            <p style="color: var(--text-light); font-weight: bold; margin-bottom: 0.5rem;">
+                                🚧 Geliştirme Aşamasında
+                            </p>
+                            <p style="color: var(--text-gray); margin: 0;">
+                                Gelişmiş ayarlar yakında eklenecektir. (API anahtarları, özel kod, vb.)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kaydet Butonu -->
+                <div style="margin-top: 3rem; text-align: center;">
+                    <button type="submit" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 3rem; min-width: 300px;">
+                        💾 Tüm Ayarları Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+.settings-tab {
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-gray);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.settings-tab:hover {
+    color: var(--cosmic-cyan);
+    background: rgba(6, 182, 212, 0.1);
+}
+
+.settings-tab.active {
+    color: var(--cosmic-cyan);
+    border-bottom-color: var(--cosmic-cyan);
+    background: rgba(6, 182, 212, 0.05);
+}
+
+.settings-content {
+    display: none;
+}
+
+.settings-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .settings-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+// Tab switching with memory
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.settings-tab');
+    const contents = document.querySelectorAll('.settings-content');
+    
+    // Kaydedilmiş tab'ı geri yükle
+    const savedTab = sessionStorage.getItem('activeSettingsTab');
+    if (savedTab) {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        const targetTab = document.querySelector(`[data-tab="${savedTab}"]`);
+        const targetContent = document.querySelector(`[data-content="${savedTab}"]`);
+        
+        if (targetTab && targetContent) {
+            targetTab.classList.add('active');
+            targetContent.classList.add('active');
+        }
+    }
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.querySelector(`[data-content="${targetTab}"]`).classList.add('active');
+            
+            // Aktif tab'ı kaydet
+            sessionStorage.setItem('activeSettingsTab', targetTab);
+        });
+    });
+    
+    // Form gönderildiğinde aktif tab'ı kaydet
+    const settingsForm = document.querySelector('form[method="POST"]');
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', function() {
+            const activeTab = document.querySelector('.settings-tab.active');
+            if (activeTab) {
+                sessionStorage.setItem('activeSettingsTab', activeTab.getAttribute('data-tab'));
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Manuel Giriş - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-keyboard me-2"></i>
+                        Manuel Giriş
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Etkinlik Bilgileri -->
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ event.title }}
+                        </h6>
+                        <p class="mb-0">
+                            <strong>Tarih:</strong> {{ event.event_date.strftime('%d.%m.%Y %H:%M') }}<br>
+                            <strong>Konum:</strong> {{ event.location }}
+                        </p>
+                    </div>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Arama Formu -->
+                    <form method="POST" action="{{ url_for('security.manual_checkin', event_id=event.id) }}">
+                        <div class="mb-3">
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-2"></i>
+                                Kullanıcı Ara (Kullanıcı adı veya E-posta)
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="search" 
+                                   name="search" 
+                                   placeholder="kullaniciadi veya email@ornek.com" 
+                                   required
+                                   autofocus>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>
+                                Ara ve Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <!-- Bilgilendirme -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Manuel Giriş Hakkında
+                        </h6>
+                        <ul class="mb-0 small">
+                            <li>Manuel giriş sadece QR kodu olmayan veya okutulamayan katılımcılar için kullanılmalıdır</li>
+                            <li>Kullanıcı adı veya e-posta adresi ile arama yapabilirsiniz</li>
+                            <li>Kullanıcı etkinliğe kayıtlı değilse bile giriş yapabilir (kayıtsız olarak işaretlenir)</li>
+                            <li>Girişler "Manuel giriş" notu ile kaydedilir</li>
+                        </ul>
+                    </div>
+
+                    <!-- İstatistikler -->
+                    <div class="row mt-4">
+                        <div class="col-4 text-center">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h3>{{ event.registrations.count() }}</h3>
+                                    <p class="mb-0 small">Kayıtlı</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h3>{{ event.check_ins.filter_by(status='checked_in').count() }}</h3>
+                                    <p class="mb-0 small">Giriş Yapan</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body">
+                                    <h3>{{ event.registrations.count() - event.check_ins.filter_by(status='checked_in').count() }}</h3>
+                                    <p class="mb-0 small">Bekleyen</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('security.event_scanner', event_id=event.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        QR Okuyucuya Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Yeni Yazı Oluştur - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div class="card">
+                <h1 class="card-title">✍️ Yeni Blog Yazısı Oluştur</h1>
+                <p class="card-text">Astronomi ve uzay bilimleri hakkında yazınızı paylaşın</p>
+                
+                <form method="POST" enctype="multipart/form-data" data-validate>
+                    <div class="form-group">
+                        <label class="form-label">Başlık *</label>
+                        <input type="text" name="title" class="form-control" 
+                               placeholder="Yazı başlığınızı girin" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Kapak Görseli</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <small style="color: var(--text-gray); display: block; margin-top: 0.5rem;">
+                            JPG, PNG veya GIF formatında, maksimum 5MB
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">İçerik *</label>
+                        <textarea name="content" class="form-control" rows="15" 
+                                  placeholder="Yazı içeriğinizi buraya yazın..." required></textarea>
+                        <small style="color: var(--text-gray); display: block; margin-top: 0.5rem;">
+                            Markdown formatını destekler
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" name="is_published" id="is_published" class="form-check-input" checked>
+                            <label for="is_published" class="form-check-label">Yazıyı hemen yayınla</label>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            📝 Yazıyı Yayınla
+                        </button>
+                        <a href="{{ url_for('blog.index') }}" class="btn btn-secondary" style="flex: 1;">
+                            ❌ İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

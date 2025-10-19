@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Etkinlik Raporu - {{ event.title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Başlık ve Butonlar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-chart-bar"></i> Etkinlik Katılım Raporu
+                </h2>
+                <div>
+                    <a href="{{ url_for('admin.download_event_report', id=event.id) }}" 
+                       class="btn btn-success me-2">
+                        <i class="fas fa-download"></i> CSV İndir
+                    </a>
+                    <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Etkinliklere Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Etkinlik Bilgileri -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ event.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong><i class="fas fa-calendar"></i> Tarih:</strong> 
+                                {{ event.event_date.strftime('%d.%m.%Y %H:%M') }}
+                            </p>
+                            <p class="mb-0">
+                                <strong><i class="fas fa-map-marker-alt"></i> Lokasyon:</strong> 
+                                {{ event.location }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if event.description %}
+                            <p class="mb-0">
+                                <strong><i class="fas fa-info-circle"></i> Açıklama:</strong><br>
+                                {{ event.description[:150] }}{% if event.description|length > 150 %}...{% endif %}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İstatistikler - Kompakt Tasarım -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center py-3 px-2">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h4 class="mb-0">{{ stats.total_registered }}</h4>
+                    <small class="text-muted">Toplam Kayıt</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center py-3 px-2">
+                    <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                    <h4 class="mb-0">{{ stats.total_attended }}</h4>
+                    <small class="text-muted">Katılan</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body text-center py-3 px-2">
+                    <i class="fas fa-user-times fa-2x text-danger mb-2"></i>
+                    <h4 class="mb-0">{{ stats.total_registered - stats.total_attended }}</h4>
+                    <small class="text-muted">Katılmayan</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center py-3 px-2">
+                    <i class="fas fa-percentage fa-2x text-info mb-2"></i>
+                    <h4 class="mb-0">{{ "%.1f"|format(stats.attendance_rate) }}%</h4>
+                    <small class="text-muted">Katılım Oranı</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Katılım Durumu Tablosu -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> Katılımcı Listesi
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-success" onclick="filterTable('all')">
+                            <i class="fas fa-users"></i> Tümü
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="filterTable('attended')">
+                            <i class="fas fa-check"></i> Katılanlar
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="filterTable('not-attended')">
+                            <i class="fas fa-times"></i> Katılmayanlar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="participants-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Kullanıcı Adı</th>
+                                    <th>Ad Soyad</th>
+                                    <th>E-posta</th>
+                                    <th>Kayıt Tarihi</th>
+                                    <th>Durum</th>
+                                    <th>Giriş Zamanı</th>
+                                    <th>Kontrol Eden</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reg in report.registrations %}
+                                <tr class="participant-row {% if reg.attendance %}attended{% else %}not-attended{% endif %}">
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <strong>{{ reg.user.username }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if reg.user.first_name or reg.user.last_name %}
+                                            {{ reg.user.first_name }} {{ reg.user.last_name }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reg.user.email }}</td>
+                                    <td>{{ reg.registered_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if reg.attendance %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Katıldı
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Katılmadı
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reg.check_ins %}
+                                            {% set checkin = reg.check_ins[0] %}
+                                            {{ checkin.checked_in_at.strftime('%d.%m.%Y %H:%M') }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reg.check_ins %}
+                                            {% set checkin = reg.check_ins[0] %}
+                                            {% if checkin.checked_in_by_user %}
+                                                {{ checkin.checked_in_by_user.username }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not report.registrations %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>Bu etkinliğe henüz kayıt yapılmamış.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Katılım Grafiği -->
+    <div class="row mt-4">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie"></i> Katılım Dağılımı
+                    </h6>
+                </div>
+                <div class="card-body" style="max-height: 400px;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Özet Bilgi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i> 
+                            <strong>Katılan:</strong> {{ stats.total_attended }} kişi
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-times text-danger"></i> 
+                            <strong>Katılmayan:</strong> {{ stats.total_registered - stats.total_attended }} kişi
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-percentage text-info"></i> 
+                            <strong>Katılım Oranı:</strong> {{ stats.attendance_rate }}%
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-calendar text-primary"></i> 
+                            <strong>Rapor Tarihi:</strong> {{ now.strftime('%d.%m.%Y %H:%M') }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Tablo filtreleme
+function filterTable(filter) {
+    const rows = document.querySelectorAll('.participant-row');
+    
+    rows.forEach(row => {
+        if (filter === 'all') {
+            row.style.display = '';
+        } else if (filter === 'attended') {
+            row.style.display = row.classList.contains('attended') ? '' : 'none';
+        } else if (filter === 'not-attended') {
+            row.style.display = row.classList.contains('not-attended') ? '' : 'none';
+        }
+    });
+}
+
+// Katılım grafiği
+const ctx = document.getElementById('attendanceChart').getContext('2d');
+const totalAttended = parseInt('{{ stats.total_attended }}');
+const totalNotAttended = parseInt('{{ stats.total_registered - stats.total_attended }}');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Katılan', 'Katılmayan'],
+        datasets: [{
+            data: [totalAttended, totalNotAttended],
+            backgroundColor: [
+                'rgba(40, 167, 69, 0.8)',
+                'rgba(220, 53, 69, 0.8)'
+            ],
+            borderColor: [
+                'rgba(40, 167, 69, 1)',
+                'rgba(220, 53, 69, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            title: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

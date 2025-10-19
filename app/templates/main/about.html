@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Hakkımızda - {{ site_settings.get('site_name', 'ATAK Kulübü') }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        {% if site_settings.get('site_logo') %}
+            <img src="{{ site_settings.get('site_logo') }}" alt="{{ site_settings.get('site_name', 'ATAK Kulübü') }}" 
+                 style="max-height: 100px; max-width: 250px; object-fit: contain; margin-bottom: 1rem;">
+        {% endif %}
+        <h1>
+            {% if not site_settings.get('site_logo') %}🌌 {% endif %}
+            Hakkımızda
+        </h1>
+        <p>{{ site_settings.get('site_name', 'ATAK Kulübü') }} - {{ site_settings.get('site_description', 'Astronomi ve Uzay Bilimleri Tutkusunu Paylaşıyoruz') }}</p>
+    </div>
+</section>
+
+<!-- About Content -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">Biz Kimiz?</h2>
+            <p class="card-text" style="line-height: 1.8;">
+                {{ site_settings.get('about_intro', 'ATAK (Astronomi ve Uzay Bilimleri Kulübü), evrenin sırlarını keşfetmek isteyen meraklı bireyler için kurulmuş bir topluluktur. 2024 yılında kurulan kulübümüz, astronomi ve uzay bilimleri alanında ilgi duyan öğrenci, akademisyen ve astronomi meraklılarını bir araya getirmektedir.') }}
+            </p>
+        </div>
+
+        {% if site_settings.get('about_mission') or site_settings.get('about_vision') %}
+        <div class="grid grid-2 mt-4">
+            {% if site_settings.get('about_mission') %}
+            <div class="card">
+                <h3 class="card-title">🎯 Misyonumuz</h3>
+                <p class="card-text" style="white-space: pre-line;">
+                    {{ site_settings.get('about_mission') }}
+                </p>
+            </div>
+            {% endif %}
+
+            {% if site_settings.get('about_vision') %}
+            <div class="card">
+                <h3 class="card-title">🔭 Vizyonumuz</h3>
+                <p class="card-text" style="white-space: pre-line;">
+                    {{ site_settings.get('about_vision') }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="grid grid-2 mt-4">
+            <div class="card">
+                <h3 class="card-title">🎯 Misyonumuz</h3>
+                <p class="card-text">
+                    Astronomi ve uzay bilimlerine olan ilgiyi artırmak, bu alanlarda bilgi 
+                    paylaşımını desteklemek ve topluluğumuzda bilimsel düşünceyi yaygınlaştırmak.
+                </p>
+                <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">✨ Bilim ve keşif tutkusunu yaymak</li>
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">✨ Gözlem ve araştırma imkanları sunmak</li>
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">✨ Eğitici içerikler üretmek</li>
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">✨ Bilimsel topluluk oluşturmak</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">🔭 Vizyonumuz</h3>
+                <p class="card-text">
+                    Türkiye'nin en aktif ve etkili astronomi topluluklarından biri olmak, 
+                    genç nesillere evren merakını aşılamak ve bilimsel düşüncenin gelişmesine 
+                    katkıda bulunmak.
+                </p>
+                <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">🌟 Türkiye'nin lider astronomi topluluğu</li>
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">🌟 Profesyonel gözlem imkanları</li>
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">🌟 Ulusal ve uluslararası işbirlikleri</li>
+                    <li style="padding: 0.5rem 0; color: var(--text-gray);">🌟 Sürdürülebilir bilim ekosistemi</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Activities Section -->
+<section style="padding: 4rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <h2 style="font-size: 2rem; color: var(--star-yellow); text-align: center; margin-bottom: 2rem;">
+            Neler Yapıyoruz?
+        </h2>
+        
+        <div class="grid grid-3">
+            <div class="card">
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">🔭</div>
+                <h3 class="card-title">Gözlem Geceleri</h3>
+                <p class="card-text">
+                    Düzenli olarak organize edilen gözlem gecelerinde profesyonel 
+                    teleskoplar eşliğinde gökyüzünü inceliyoruz. Ay, gezegenler, 
+                    yıldız kümeleri ve nebulalar gözlemleniyor.
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">🎓</div>
+                <h3 class="card-title">Eğitim Programları</h3>
+                <p class="card-text">
+                    Temel astronomiden ileri düzey astrofiziğe kadar çeşitli 
+                    konularda eğitim programları ve atölyeler düzenliyoruz. 
+                    Uzman konuşmacılarla seminerler organize ediyoruz.
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">📸</div>
+                <h3 class="card-title">Astrofotoğrafçılık</h3>
+                <p class="card-text">
+                    Gökyüzünü fotoğraflamak isteyenler için astrofotoğrafçılık 
+                    atölyeleri düzenliyoruz. Temel tekniklerden profesyonel 
+                    görüntülemeye kadar eğitim veriyoruz.
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">🌍</div>
+                <h3 class="card-title">Kırsal Gözlemler</h3>
+                <p class="card-text">
+                    Işık kirliliğinden uzak bölgelerde kamp ve gözlem etkinlikleri 
+                    düzenliyoruz. Samanyolu ve derin uzay cisimlerini ideal 
+                    koşullarda gözlemliyoruz.
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">🎤</div>
+                <h3 class="card-title">Konferanslar</h3>
+                <p class="card-text">
+                    Akademisyenler, araştırmacılar ve uzay çalışanlarıyla 
+                    düzenli konferanslar organize ediyoruz. Güncel uzay 
+                    misyonları ve bilimsel gelişmeleri tartışıyoruz.
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">📚</div>
+                <h3 class="card-title">Yayınlar</h3>
+                <p class="card-text">
+                    Blog yazıları, bültenler ve sosyal medya içerikleriyle 
+                    astronomi ve uzay bilimlerini halka ulaştırıyoruz. Bilimi 
+                    erişilebilir kılmak için çalışıyoruz.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Join Section -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div class="card text-center" style="background: linear-gradient(135deg, var(--space-blue) 0%, var(--space-purple) 100%);">
+            <h2 style="font-size: 2rem; color: var(--text-light); margin-bottom: 1rem;">
+                Aramıza Katılın! 🚀
+            </h2>
+            <p style="color: var(--text-gray); max-width: 600px; margin: 0 auto 2rem;">
+                Astronomi ve uzay bilimleri meraklısıysanız, ATAK ailesine katılın! 
+                Etkinliklerimize katılarak bilgi ve deneyimlerinizi paylaşın.
+            </p>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="font-size: 1.1rem;">
+                    Hemen Üye Ol
+                </a>
+            {% else %}
+                <a href="{{ url_for('events.index') }}" class="btn btn-primary" style="font-size: 1.1rem;">
+                    Etkinliklere Göz At
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

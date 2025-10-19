@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}İletişim - ATAK Kulübü{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>📧 İletişim</h1>
+        <p>Bizimle iletişime geçin, sorularınızı paylaşın!</p>
+    </div>
+</section>
+
+<!-- Contact Content -->
+<section style="padding: 4rem 0;">
+    <div class="container">
+        <div class="grid grid-2">
+            <!-- Contact Form -->
+            <div class="card">
+                <h2 class="card-title">Mesaj Gönderin</h2>
+                <p class="card-text">
+                    Sorularınız, önerileriniz veya geri bildirimleriniz için aşağıdaki 
+                    formu kullanabilirsiniz.
+                </p>
+                
+                <form method="POST" data-validate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", placeholder="Adınız Soyadınız") }}
+                        {% if form.name.errors %}
+                            {% for error in form.name.errors %}
+                                <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", placeholder="ornek@email.com") }}
+                        {% if form.email.errors %}
+                            {% for error in form.email.errors %}
+                                <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.subject.label(class="form-label") }}
+                        {{ form.subject(class="form-control", placeholder="Mesaj konusu") }}
+                        {% if form.subject.errors %}
+                            {% for error in form.subject.errors %}
+                                <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.message.label(class="form-label") }}
+                        {{ form.message(class="form-control", placeholder="Mesajınızı buraya yazın...", rows=6) }}
+                        {% if form.message.errors %}
+                            {% for error in form.message.errors %}
+                                <span class="error-msg" style="color: #ef4444; font-size: 0.875rem;">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        📨 Gönder
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Contact Information -->
+            <div>
+                <div class="card">
+                    <h3 class="card-title">İletişim Bilgileri</h3>
+                    {% if site_settings %}
+                        {% if site_settings.get('contact_email') %}
+                        <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="font-size: 2rem;">✉️</div>
+                            <div>
+                                <strong style="color: var(--text-light);">E-posta</strong>
+                                <p style="color: var(--text-gray); margin-top: 0.25rem;">
+                                    <a href="mailto:{{ site_settings.get('contact_email') }}" 
+                                       style="color: var(--cosmic-cyan); text-decoration: none;">
+                                        {{ site_settings.get('contact_email') }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if site_settings.get('contact_phone') %}
+                        <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="font-size: 2rem;">📞</div>
+                            <div>
+                                <strong style="color: var(--text-light);">Telefon</strong>
+                                <p style="color: var(--text-gray); margin-top: 0.25rem;">
+                                    <a href="tel:{{ site_settings.get('contact_phone') }}" 
+                                       style="color: var(--cosmic-cyan); text-decoration: none;">
+                                        {{ site_settings.get('contact_phone') }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if site_settings.get('address') %}
+                        <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="font-size: 2rem;">📍</div>
+                            <div>
+                                <strong style="color: var(--text-light);">Adres</strong>
+                                <p style="color: var(--text-gray); margin-top: 0.25rem;">
+                                    {{ site_settings.get('address') }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p style="color: var(--text-gray);">İletişim bilgileri yakında eklenecektir.</p>
+                    {% endif %}
+                </div>
+                
+                <div class="card mt-3">
+                    <h3 class="card-title">Çalışma Saatleri</h3>
+                    <div style="color: var(--text-gray); line-height: 2;">
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-glow);">
+                            <span>Pazartesi - Cuma</span>
+                            <strong style="color: var(--text-light);">09:00 - 18:00</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-glow);">
+                            <span>Cumartesi</span>
+                            <strong style="color: var(--text-light);">10:00 - 16:00</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span>Pazar</span>
+                            <strong style="color: var(--nebula-pink);">Kapalı</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <h3 class="card-title">Sosyal Medya</h3>
+                    <p style="color: var(--text-gray); margin-bottom: 1rem;">
+                        Bizi sosyal medyada takip edin!
+                    </p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        {% if site_settings.get('social_facebook') %}
+                        <a href="{{ site_settings.get('social_facebook') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">📘 Facebook</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_twitter') %}
+                        <a href="{{ site_settings.get('social_twitter') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">🐦 Twitter</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_instagram') %}
+                        <a href="{{ site_settings.get('social_instagram') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">📷 Instagram</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_linkedin') %}
+                        <a href="{{ site_settings.get('social_linkedin') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">💼 LinkedIn</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_youtube') %}
+                        <a href="{{ site_settings.get('social_youtube') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">▶️ YouTube</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_whatsapp') %}
+                        <a href="{{ site_settings.get('social_whatsapp') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">💬 WhatsApp</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_telegram') %}
+                        <a href="{{ site_settings.get('social_telegram') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">✈️ Telegram</a>
+                        {% endif %}
+                        
+                        {% if site_settings.get('social_discord') %}
+                        <a href="{{ site_settings.get('social_discord') }}" target="_blank" rel="noopener" 
+                           class="btn btn-secondary btn-sm">🎮 Discord</a>
+                        {% endif %}
+                        
+                        {% if not (site_settings.get('social_facebook') or site_settings.get('social_twitter') or 
+                                   site_settings.get('social_instagram') or site_settings.get('social_linkedin') or
+                                   site_settings.get('social_youtube') or site_settings.get('social_whatsapp') or
+                                   site_settings.get('social_telegram') or site_settings.get('social_discord')) %}
+                        <p style="color: var(--text-gray);">Sosyal medya linkleri yakında eklenecektir.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section style="padding: 4rem 0; background: rgba(30, 58, 138, 0.05);">
+    <div class="container">
+        <h2 style="font-size: 2rem; color: var(--star-yellow); text-align: center; margin-bottom: 2rem;">
+            Sıkça Sorulan Sorular
+        </h2>
+        
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div class="card mb-3">
+                <h3 class="card-title">Kulübe nasıl üye olabilirim?</h3>
+                <p class="card-text">
+                    Web sitemizin sağ üst köşesindeki "Kayıt Ol" butonuna tıklayarak 
+                    üye olabilirsiniz. Üyelik onayı aldıktan sonra tüm etkinliklere 
+                    katılabilirsiniz.
+                </p>
+            </div>
+            
+            <div class="card mb-3">
+                <h3 class="card-title">Üyelik ücreti var mı?</h3>
+                <p class="card-text">
+                    Hayır, kulüp üyeliği tamamen ücretsizdir. Bazı özel etkinlikler 
+                    için minimum katılım bedeli istenebilir.
+                </p>
+            </div>
+            
+            <div class="card mb-3">
+                <h3 class="card-title">Astronomiye yeni başladım, katılabilir miyim?</h3>
+                <p class="card-text">
+                    Elbette! Kulübümüz her seviyeden astronomi meraklısını kabul eder. 
+                    Yeni başlayanlar için özel eğitim programlarımız bulunmaktadır.
+                </p>
+            </div>
+            
+            <div class="card mb-3">
+                <h3 class="card-title">Teleskop sahibi olmam gerekir mi?</h3>
+                <p class="card-text">
+                    Hayır, kulübümüzün profesyonel teleskopları bulunmaktadır. 
+                    Etkinliklerde bu teleskopları kullanabilirsiniz.
+                </p>
+            </div>
+            
+            <div class="card mb-3">
+                <h3 class="card-title">Etkinliklere nasıl katılabilirim?</h3>
+                <p class="card-text">
+                    Etkinlikler sayfasından ilgilendiğiniz etkinliğe kayıt olabilirsiniz. 
+                    Onaylanan kayıtlar için etkinlik detayları e-posta ile gönderilir.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
