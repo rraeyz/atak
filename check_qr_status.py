@@ -60,7 +60,7 @@ with app.app_context():
         print(f"\n🎫 QR ID: {qr.id}")
         print(f"   Kod: {qr.code}")
         print(f"   Path: {qr.qr_image_path}")
-        print(f"   Kullanıcı: {user.get_full_name()}")
+        print(f"   Kullanıcı: {user.first_name} {user.last_name}")
         print(f"   Etkinlik: {event.title}")
         print(f"   Oluşturulma: {qr.generated_at}")
     
