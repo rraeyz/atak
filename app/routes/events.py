@@ -102,12 +102,15 @@ def register(id):
                 db.session.add(qr_code_new)
                 db.session.commit()
                 print(f"✅ (existing) QR kod veritabanına kaydedildi: {qr_code_new.qr_image_path}")
+                flash('Bu etkinliğe zaten kayıtlısınız. Eksik QR kodunuz oluşturuldu!', 'success')
             except Exception as e:
                 print(f"❌ (existing) QR kod oluşturma hatası: {e}")
                 import traceback
                 traceback.print_exc()
-
-        flash('Bu etkinliğe zaten kayıtlısınız.', 'info')
+                flash('Bu etkinliğe zaten kayıtlısınız ancak QR kod oluşturulamadı. Lütfen yöneticiye bildirin.', 'warning')
+        else:
+            flash('Bu etkinliğe zaten kayıtlısınız.', 'info')
+        
         return redirect(url_for('events.detail', id=id))
     
     # İptal edilmiş bir kayıt var mı? Varsa yeniden aktif hale getir
@@ -122,7 +125,9 @@ def register(id):
         cancelled_registration.status = 'approved'
         cancelled_registration.registered_at = datetime.utcnow()
         db.session.commit()
+        
         # Aktifleştirildikten sonra QR kodu oluştur (eğer yoksa)
+        qr_reactivated = False
         try:
             from app.models import QRCode as _QRCodeModel
             qr_code_existing = _QRCodeModel.query.filter_by(registration_id=cancelled_registration.id).first()
@@ -146,12 +151,19 @@ def register(id):
                 db.session.add(qr_code_new)
                 db.session.commit()
                 print(f"✅ (reactivated) QR kod veritabanına kaydedildi: {qr_code_new.qr_image_path}")
+                qr_reactivated = True
+            else:
+                qr_reactivated = True  # QR zaten var
         except Exception as e:
             print(f"❌ (reactivated) QR kod oluşturma hatası: {e}")
             import traceback
             traceback.print_exc()
+            flash('Etkinliğe yeniden kayıt oldunuz ancak QR kod oluşturulamadı. Lütfen yöneticiye bildirin.', 'warning')
+            return redirect(url_for('events.detail', id=id))
 
-        flash('Etkinliğe yeniden kayıt oldunuz! QR kodunuzu profil sayfanızdan görebilirsiniz.', 'success')
+        if qr_reactivated:
+            flash('Etkinliğe yeniden kayıt oldunuz! QR kodunuzu profil sayfanızdan görebilirsiniz.', 'success')
+        
         return redirect(url_for('events.detail', id=id))
     
     # Yeni kayıt
@@ -167,6 +179,7 @@ def register(id):
     db.session.commit()
     
     # QR kod oluştur
+    qr_created = False
     try:
         code, qr_image_path = generate_event_qr_code(
             current_user.id,
@@ -190,12 +203,18 @@ def register(id):
         db.session.commit()
         
         print(f"✅ QR kod veritabanına kaydedildi: {qr_code.qr_image_path}")
+        qr_created = True
     except Exception as e:
         print(f"❌ QR kod oluşturma hatası: {e}")
         import traceback
         traceback.print_exc()
+        # Hata durumunda kullanıcıyı bilgilendir
+        flash('Etkinliğe kayıt oldunuz ancak QR kod oluşturulamadı. Lütfen yöneticiye bildirin.', 'warning')
+        return redirect(url_for('events.detail', id=id))
     
-    flash('Etkinliğe başarıyla kayıt oldunuz! QR kodunuzu profil sayfanızdan görebilirsiniz.', 'success')
+    if qr_created:
+        flash('Etkinliğe başarıyla kayıt oldunuz! QR kodunuzu profil sayfanızdan görebilirsiniz.', 'success')
+    
     return redirect(url_for('events.detail', id=id))
 
 
