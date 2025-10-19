@@ -321,6 +321,17 @@ def seed_db():
 
 
 if __name__ == '__main__':
-    # HTTPS için self-signed sertifika ile çalıştır
-    # Kamera erişimi için gerekli
-    app.run(debug=True, port=5000, ssl_context='adhoc')
+    # Yerel geliştirme için HTTPS (kamera erişimi)
+    # PythonAnywhere otomatik olarak HTTPS kullanır
+    import os
+    use_ssl = os.environ.get('USE_SSL', 'true').lower() == 'true'
+    
+    if use_ssl:
+        try:
+            app.run(debug=True, port=5000, ssl_context='adhoc')
+        except:
+            # pyopenssl kurulu değilse normal HTTP
+            print("⚠️  HTTPS başlatılamadı, HTTP kullanılıyor (kamera mobilde çalışmayabilir)")
+            app.run(debug=True, port=5000)
+    else:
+        app.run(debug=True, port=5000)
