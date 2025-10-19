@@ -78,6 +78,35 @@ def register(id):
     ).filter(EventRegistration.status != 'cancelled').first()
     
     if existing_registration:
+        # Eğer zaten kayıtlıysa fakat QR kodu yoksa, eksikse oluştur
+        from app.models import QRCode as _QRCodeModel
+        qr_code_existing = _QRCodeModel.query.filter_by(registration_id=existing_registration.id).first()
+        if not qr_code_existing:
+            try:
+                code, qr_image_path = generate_event_qr_code(
+                    current_user.id,
+                    event.id,
+                    existing_registration.id
+                )
+                print(f"🔧 (existing) QR Kod Debug:")
+                print(f"  Code: {code}")
+                print(f"  Image Path: {qr_image_path}")
+
+                qr_code_new = _QRCodeModel(
+                    user_id=current_user.id,
+                    event_id=event.id,
+                    registration_id=existing_registration.id,
+                    code=code,
+                    qr_image_path=qr_image_path
+                )
+                db.session.add(qr_code_new)
+                db.session.commit()
+                print(f"✅ (existing) QR kod veritabanına kaydedildi: {qr_code_new.qr_image_path}")
+            except Exception as e:
+                print(f"❌ (existing) QR kod oluşturma hatası: {e}")
+                import traceback
+                traceback.print_exc()
+
         flash('Bu etkinliğe zaten kayıtlısınız.', 'info')
         return redirect(url_for('events.detail', id=id))
     
@@ -93,6 +122,35 @@ def register(id):
         cancelled_registration.status = 'approved'
         cancelled_registration.registered_at = datetime.utcnow()
         db.session.commit()
+        # Aktifleştirildikten sonra QR kodu oluştur (eğer yoksa)
+        try:
+            from app.models import QRCode as _QRCodeModel
+            qr_code_existing = _QRCodeModel.query.filter_by(registration_id=cancelled_registration.id).first()
+            if not qr_code_existing:
+                code, qr_image_path = generate_event_qr_code(
+                    current_user.id,
+                    event.id,
+                    cancelled_registration.id
+                )
+                print(f"🔧 (reactivated) QR Kod Debug:")
+                print(f"  Code: {code}")
+                print(f"  Image Path: {qr_image_path}")
+
+                qr_code_new = _QRCodeModel(
+                    user_id=current_user.id,
+                    event_id=event.id,
+                    registration_id=cancelled_registration.id,
+                    code=code,
+                    qr_image_path=qr_image_path
+                )
+                db.session.add(qr_code_new)
+                db.session.commit()
+                print(f"✅ (reactivated) QR kod veritabanına kaydedildi: {qr_code_new.qr_image_path}")
+        except Exception as e:
+            print(f"❌ (reactivated) QR kod oluşturma hatası: {e}")
+            import traceback
+            traceback.print_exc()
+
         flash('Etkinliğe yeniden kayıt oldunuz! QR kodunuzu profil sayfanızdan görebilirsiniz.', 'success')
         return redirect(url_for('events.detail', id=id))
     
