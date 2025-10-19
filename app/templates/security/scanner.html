@@ -4,8 +4,8 @@
 
 {% block head %}
 {{ super() }}
-<!-- QR Kod Okuma Kütüphanesi -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<!-- QR Kod Okuma Kütüphanesi - Yerel -->
+<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
 <style>
     #qr-reader {
         border: 2px solid #007bff;
