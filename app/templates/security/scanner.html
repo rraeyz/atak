@@ -5,7 +5,7 @@
 {% block head %}
 {{ super() }}
 <!-- QR Kod Okuma Kütüphanesi -->
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
     #qr-reader {
         border: 2px solid #007bff;
@@ -107,6 +107,11 @@
 
                             <!-- QR Okuyucu Alanı -->
                             <div id="qr-reader" class="mb-2"></div>
+
+                            <!-- Debug/Hata Mesajları -->
+                            <div id="debug-info" class="alert alert-info small py-1 px-2 mb-2" style="display: none;">
+                                <strong>🔧 Debug:</strong> <span id="debug-text"></span>
+                            </div>
 
                             <!-- Kontrol Butonları -->
                             <div class="d-flex gap-2">
@@ -219,14 +224,47 @@ let isScanning = false;
 // Event ID'yi Jinja'dan al
 const eventId = parseInt('{{ event.id }}');
 
+// Debug mesajı göster
+function showDebug(message, isError = false) {
+    const debugDiv = document.getElementById('debug-info');
+    const debugText = document.getElementById('debug-text');
+    debugDiv.className = isError ? 'alert alert-danger small py-1 px-2 mb-2' : 'alert alert-info small py-1 px-2 mb-2';
+    debugText.textContent = message;
+    debugDiv.style.display = 'block';
+    console.log('[QR Scanner]', message);
+}
+
 // Kameraları yükle
 async function loadCameras() {
     try {
+        showDebug('Kamera erişimi kontrol ediliyor...');
+        
+        // Temel kontroller
+        if (!navigator.mediaDevices) {
+            throw new Error('navigator.mediaDevices desteklenmiyor');
+        }
+        
+        if (!navigator.mediaDevices.getUserMedia) {
+            throw new Error('getUserMedia desteklenmiyor');
+        }
+        
+        showDebug('Kameralar taranıyor...');
+        
+        // İlk önce izin al
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop()); // Hemen kapat
+            showDebug('Kamera izni alındı ✓');
+        } catch (permErr) {
+            throw new Error('Kamera izni reddedildi: ' + permErr.message);
+        }
+        
         const devices = await Html5Qrcode.getCameras();
         const select = document.getElementById('camera-select');
         select.innerHTML = '';
         
         if (devices && devices.length > 0) {
+            showDebug(`${devices.length} kamera bulundu ✓`);
             devices.forEach((device, index) => {
                 const option = document.createElement('option');
                 option.value = device.id;
@@ -234,10 +272,25 @@ async function loadCameras() {
                 select.appendChild(option);
             });
         } else {
-            select.innerHTML = '<option value="">Kamera bulunamadı</option>';
+            throw new Error('Hiç kamera bulunamadı');
         }
     } catch (err) {
         console.error('Kamera yükleme hatası:', err);
+        let errorMsg = 'Kamera erişim hatası';
+        
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            errorMsg = 'Kamera izni verilmedi! Tarayıcı ayarlarından kamera erişimine izin verin.';
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+            errorMsg = 'Kamera bulunamadı! Kameranızın takılı ve çalışır durumda olduğundan emin olun.';
+        } else if (err.name === 'NotSupportedError') {
+            errorMsg = 'HTTPS gerekli! Sayfa güvenli bağlantı üzerinden açılmalı.';
+        } else if (err.name === 'NotReadableError') {
+            errorMsg = 'Kamera başka bir uygulama tarafından kullanılıyor olabilir.';
+        } else {
+            errorMsg = err.message;
+        }
+        
+        showDebug('❌ ' + errorMsg, true);
         document.getElementById('camera-select').innerHTML = '<option value="">Kamera erişim hatası</option>';
     }
 }

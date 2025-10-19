@@ -321,4 +321,6 @@ def seed_db():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # HTTPS için self-signed sertifika ile çalıştır
+    # Kamera erişimi için gerekli
+    app.run(debug=True, port=5000, ssl_context='adhoc')
