@@ -37,12 +37,23 @@ def generate_qr_code(data, filename=None):
     img = qr.make_image(fill_color="black", back_color="white")
     
     if filename:
-        # Dosya olarak kaydet
-        upload_folder = os.path.join('app', 'static', 'uploads', 'qr_codes')
+        # Dosya olarak kaydet - Flask app root'undan başla
+        from flask import current_app
+        
+        # Flask app'in static folder'ını kullan (mutlak yol)
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'qr_codes')
         os.makedirs(upload_folder, exist_ok=True)
         
         filepath = os.path.join(upload_folder, filename)
         img.save(filepath)
+        
+        # Debug: Dosya gerçekten kaydedildi mi?
+        if os.path.exists(filepath):
+            file_size = os.path.getsize(filepath)
+            print(f"✅ QR dosyası kaydedildi: {filepath} ({file_size} bytes)")
+        else:
+            print(f"❌ QR dosyası kaydedilemedi: {filepath}")
+        
         # Sadece uploads klasöründen sonraki yolu döndür (url_for ile kullanmak için)
         return f"uploads/qr_codes/{filename}"
     else:
