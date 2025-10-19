@@ -5,7 +5,7 @@
 {% block head %}
 {{ super() }}
 <!-- QR Kod Okuma Kütüphanesi - Yerel -->
-<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
 <style>
     #qr-reader {
         border: 2px solid #007bff;
@@ -221,15 +221,29 @@
 <script>
 // Sayfa ve tüm scriptler yüklendiğinde çalıştır
 document.addEventListener('DOMContentLoaded', function() {
-    // Html5Qrcode kütüphanesinin yüklendiğini kontrol et
-    if (typeof Html5Qrcode === 'undefined') {
-        console.error('🔧 Debug: ❌ Html5Qrcode kütüphanesi yüklenmedi! Script dosyası kontrol edilmeli.');
-        document.getElementById('debug-text').textContent = '❌ QR kod kütüphanesi yüklenemedi. Lütfen sayfayı yenileyin.';
-        document.getElementById('debug-info').style.display = 'block';
-        return;
+    // Html5Qrcode kütüphanesinin yüklenmesini bekle (retry mechanism)
+    let retryCount = 0;
+    const maxRetries = 20; // 2 saniye (100ms * 20)
+    
+    function waitForHtml5Qrcode() {
+        if (typeof Html5Qrcode !== 'undefined') {
+            console.log('🔧 Debug: ✅ Html5Qrcode kütüphanesi yüklendi');
+            initializeScanner();
+        } else if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(waitForHtml5Qrcode, 100); // 100ms sonra tekrar dene
+        } else {
+            console.error('🔧 Debug: ❌ Html5Qrcode kütüphanesi yüklenemedi! Script dosyası kontrol edilmeli.');
+            document.getElementById('debug-text').textContent = '❌ QR kod kütüphanesi yüklenemedi. Lütfen sayfayı yenileyin.';
+            document.getElementById('debug-info').style.display = 'block';
+        }
     }
     
-    console.log('🔧 Debug: ✅ Html5Qrcode kütüphanesi yüklendi');
+    waitForHtml5Qrcode();
+});
+
+function initializeScanner() {
+    // Tüm scanner kodunu buraya taşıyoruz
     
 let html5QrCode = null;
 let isScanning = false;
@@ -582,8 +596,10 @@ function playSound(success) {
     }
 }
 
-// Kameraları yükle (DOMContentLoaded içinde)
+// Kameraları yükle (initializeScanner içinde)
 loadCameras();
+
+} // initializeScanner() fonksiyonu sonu
 
 }); // DOMContentLoaded event listener sonu
 
