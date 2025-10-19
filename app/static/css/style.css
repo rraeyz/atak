@@ -175,8 +175,8 @@ body::before {
         background: rgba(10, 14, 39, 0.98);
         backdrop-filter: blur(10px);
         flex-direction: column;
-        padding: 0.5rem 0;
-        gap: 0.25rem; /* Menü öğeleri arasında boşluk */
+        padding: 0.25rem 0; /* Küçültüldü: 0.5rem → 0.25rem */
+        gap: 0; /* Boşluk kaldırıldı: 0.25rem → 0 */
         display: none;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         max-height: 80vh;
@@ -187,7 +187,7 @@ body::before {
         display: flex;
     }
 
-    /* Mobil menü öğeleri - GENİŞ dokunma hedefi */
+    /* Mobil menü öğeleri - Dengeli dokunma hedefi */
     .navbar-nav li {
         width: 100%;
         margin: 0;
@@ -196,14 +196,14 @@ body::before {
     .nav-link {
         display: block;
         width: 100%;
-        padding: 1.25rem 1.5rem; /* DAHA BÜYÜK padding */
+        padding: 0.9rem 1.2rem; /* Küçültüldü: 1.25rem 1.5rem → 0.9rem 1.2rem */
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         border-left: 2px solid transparent; /* Varsayılan şeffaf border */
         text-align: left;
-        font-size: 1.1rem; /* Daha büyük yazı */
-        margin: 0; /* Hiç margin olmasın */
-        border-radius: 0 !important; /* BALONCUK YOK */
-        background: transparent !important; /* ARKA PLAN YOK */
+        font-size: 1rem; /* Küçültüldü: 1.1rem → 1rem */
+        margin: 0;
+        border-radius: 0 !important;
+        background: transparent !important;
     }
     
     /* Son öğenin alt çizgisini kaldır */
