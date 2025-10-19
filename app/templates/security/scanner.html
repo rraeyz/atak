@@ -228,7 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function waitForHtml5Qrcode() {
         if (typeof Html5Qrcode !== 'undefined') {
             console.log('🔧 Debug: ✅ Html5Qrcode kütüphanesi yüklendi');
-            initializeScanner();
+            // Kütüphane yüklendi, scanner'ı başlat
+            initScanner();
         } else if (retryCount < maxRetries) {
             retryCount++;
             setTimeout(waitForHtml5Qrcode, 100); // 100ms sonra tekrar dene
@@ -239,11 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    waitForHtml5Qrcode();
-});
-
-function initializeScanner() {
-    // Tüm scanner kodunu buraya taşıyoruz
+    function initScanner() {
+        // Tüm scanner kodu burada
     
 let html5QrCode = null;
 let isScanning = false;
@@ -596,16 +594,19 @@ function playSound(success) {
     }
 }
 
-// Kameraları yükle (initializeScanner içinde)
+// Kameraları yükle
 loadCameras();
 
-} // initializeScanner() fonksiyonu sonu
-
+    } // initScanner() fonksiyonu sonu
+    
+    // waitForHtml5Qrcode'u başlat
+    waitForHtml5Qrcode();
+    
 }); // DOMContentLoaded event listener sonu
 
 // Sayfa kapanırken kamerayı durdur
 window.addEventListener('beforeunload', () => {
-    if (isScanning) {
+    if (typeof stopScanning === 'function' && isScanning) {
         stopScanning();
     }
 });
