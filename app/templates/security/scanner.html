@@ -4,8 +4,6 @@
 
 {% block head %}
 {{ super() }}
-<!-- QR Kod Okuma Kütüphanesi - Yerel -->
-<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
 <style>
     #qr-reader {
         border: 2px solid #007bff;
@@ -218,30 +216,29 @@
     </div>
 </div>
 
+<!-- QR Kod Okuma Kütüphanesi - Yerel (Body sonunda yükleniyor) -->
+<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
+
 <script>
-// Sayfa ve tüm scriptler yüklendiğinde çalıştır
-document.addEventListener('DOMContentLoaded', function() {
-    // Html5Qrcode kütüphanesinin yüklenmesini bekle (retry mechanism)
-    let retryCount = 0;
-    const maxRetries = 20; // 2 saniye (100ms * 20)
+// Script yüklendikten SONRA çalışsın diye window.onload kullanıyoruz
+window.addEventListener('load', function() {
+    console.log('🔧 Page fully loaded');
+    console.log('🔧 Html5Qrcode check:', typeof Html5Qrcode);
     
-    function waitForHtml5Qrcode() {
-        if (typeof Html5Qrcode !== 'undefined') {
-            console.log('🔧 Debug: ✅ Html5Qrcode kütüphanesi yüklendi');
-            // Kütüphane yüklendi, scanner'ı başlat
-            initScanner();
-        } else if (retryCount < maxRetries) {
-            retryCount++;
-            setTimeout(waitForHtml5Qrcode, 100); // 100ms sonra tekrar dene
-        } else {
-            console.error('🔧 Debug: ❌ Html5Qrcode kütüphanesi yüklenemedi! Script dosyası kontrol edilmeli.');
-            document.getElementById('debug-text').textContent = '❌ QR kod kütüphanesi yüklenemedi. Lütfen sayfayı yenileyin.';
-            document.getElementById('debug-info').style.display = 'block';
-        }
+    // Html5Qrcode kontrolü
+    if (typeof Html5Qrcode === 'undefined') {
+        console.error('🔧 Debug: ❌ Html5Qrcode YİNE tanımsız! Static file yüklenemedi!');
+        document.getElementById('debug-text').textContent = '❌ QR kod kütüphanesi yüklenemedi. Static files mapping kontrol edin!';
+        document.getElementById('debug-info').style.display = 'block';
+        return;
     }
     
-    function initScanner() {
-        // Tüm scanner kodu burada
+    console.log('🔧 Debug: ✅ Html5Qrcode kütüphanesi yüklendi');
+    initScanner();
+});
+
+function initScanner() {
+    console.log('🔧 initScanner() başladı');
     
 let html5QrCode = null;
 let isScanning = false;
@@ -597,18 +594,7 @@ function playSound(success) {
 // Kameraları yükle
 loadCameras();
 
-    } // initScanner() fonksiyonu sonu
-    
-    // waitForHtml5Qrcode'u başlat
-    waitForHtml5Qrcode();
-    
-}); // DOMContentLoaded event listener sonu
+} // initScanner() fonksiyonu sonu
 
-// Sayfa kapanırken kamerayı durdur
-window.addEventListener('beforeunload', () => {
-    if (typeof stopScanning === 'function' && isScanning) {
-        stopScanning();
-    }
-});
 </script>
 {% endblock %}
