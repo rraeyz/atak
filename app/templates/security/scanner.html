@@ -5,7 +5,7 @@
 {% block head %}
 {{ super() }}
 <!-- QR Kod Okuma Kütüphanesi - Yerel -->
-<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}" defer></script>
 <style>
     #qr-reader {
         border: 2px solid #007bff;
@@ -219,6 +219,18 @@
 </div>
 
 <script>
+// Sayfa ve tüm scriptler yüklendiğinde çalıştır
+document.addEventListener('DOMContentLoaded', function() {
+    // Html5Qrcode kütüphanesinin yüklendiğini kontrol et
+    if (typeof Html5Qrcode === 'undefined') {
+        console.error('🔧 Debug: ❌ Html5Qrcode kütüphanesi yüklenmedi! Script dosyası kontrol edilmeli.');
+        document.getElementById('debug-text').textContent = '❌ QR kod kütüphanesi yüklenemedi. Lütfen sayfayı yenileyin.';
+        document.getElementById('debug-info').style.display = 'block';
+        return;
+    }
+    
+    console.log('🔧 Debug: ✅ Html5Qrcode kütüphanesi yüklendi');
+    
 let html5QrCode = null;
 let isScanning = false;
 // Event ID'yi Jinja'dan al
@@ -573,7 +585,7 @@ function playSound(success) {
 // Sayfa yüklendiğinde kameraları yükle
 window.addEventListener('load', () => {
     loadCameras();
-});
+}); // DOMContentLoaded sonu
 
 // Sayfa kapanırken kamerayı durdur
 window.addEventListener('beforeunload', () => {
