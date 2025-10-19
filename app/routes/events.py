@@ -116,6 +116,11 @@ def register(id):
             registration.id
         )
         
+        # Debug log
+        print(f"🔧 QR Kod Debug:")
+        print(f"  Code: {code}")
+        print(f"  Image Path: {qr_image_path}")
+        
         qr_code = QRCode(
             user_id=current_user.id,
             event_id=event.id,
@@ -125,8 +130,12 @@ def register(id):
         )
         db.session.add(qr_code)
         db.session.commit()
+        
+        print(f"✅ QR kod veritabanına kaydedildi: {qr_code.qr_image_path}")
     except Exception as e:
-        print(f"QR kod oluşturma hatası: {e}")
+        print(f"❌ QR kod oluşturma hatası: {e}")
+        import traceback
+        traceback.print_exc()
     
     flash('Etkinliğe başarıyla kayıt oldunuz! QR kodunuzu profil sayfanızdan görebilirsiniz.', 'success')
     return redirect(url_for('events.detail', id=id))
