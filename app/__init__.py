@@ -65,11 +65,14 @@ def create_app(config_name='default'):
             if current_user.is_authenticated and current_user.has_role('admin'):
                 return None
             
-            # Bakım modu mesajı
+            # Bakım modu mesajı ve süresi
             message_setting = SiteSetting.query.filter_by(key='maintenance_message').first()
             message = message_setting.value if message_setting else 'Site şu anda bakımdadır. Lütfen daha sonra tekrar ziyaret edin.'
             
-            return render_template('errors/maintenance.html', message=message), 503
+            duration_setting = SiteSetting.query.filter_by(key='maintenance_duration').first()
+            duration = duration_setting.value if duration_setting else 'Kısa bir süre'
+            
+            return render_template('errors/maintenance.html', message=message, duration=duration), 503
         
         return None
     

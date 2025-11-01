@@ -147,6 +147,16 @@
                                 <label class="form-label">Bakım Modu Mesajı</label>
                                 <textarea name="setting_maintenance_message" class="form-control" rows="2">{{ settings.get('maintenance_message', 'Site şu anda bakımdadır.') }}</textarea>
                             </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Tahmini Bakım Süresi</label>
+                                <input type="text" name="setting_maintenance_duration" class="form-control" 
+                                       value="{{ settings.get('maintenance_duration', 'Kısa bir süre') }}" 
+                                       placeholder="Örn: 30 dakika, 2 saat, Kısa bir süre">
+                                <small style="color: var(--text-gray); display: block; margin-top: 0.5rem;">
+                                    💡 Kullanıcılara ne kadar süreceği hakkında bilgi verin
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
