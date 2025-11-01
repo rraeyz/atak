@@ -1,4 +1,5 @@
 venv/
+yeni-venv/
 __pycache__/
 *.pyc
 *.pyo
