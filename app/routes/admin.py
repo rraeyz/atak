@@ -126,15 +126,21 @@ def user_detail(id):
     """Kullanıcı detay"""
     user = User.query.get_or_404(id)
     
+    # Kullanıcının en yüksek rol seviyesi
+    user_level = user.get_highest_role_level()
+    my_level = current_user.get_highest_role_level()
+    
+    # Yönetme yetkisi kontrolü
+    can_manage = current_user.has_role('root') or (my_level > user_level)
+    
     # Sadece yönetebileceği rolleri göster
     if current_user.has_role('root'):
         all_roles = Role.query.order_by(Role.hierarchy_level.desc()).all()
     else:
         # Kendi seviyesinden düşük rolleri göster
-        my_level = current_user.get_highest_role_level()
         all_roles = Role.query.filter(Role.hierarchy_level < my_level).order_by(Role.hierarchy_level.desc()).all()
     
-    return render_template('admin/user_detail.html', user=user, all_roles=all_roles)
+    return render_template('admin/user_detail.html', user=user, all_roles=all_roles, can_manage=can_manage, my_level=my_level)
 
 
 @bp.route('/kullanicilar/<int:id>/onayla', methods=['POST'])
@@ -193,15 +199,19 @@ def add_user_role(id):
     
     role = Role.query.get_or_404(role_id)
     
-    # Yetki kontrolü: Bu rolü atayabilir mi?
-    if not current_user.can_assign_role(role):
-        flash('Bu rolü atama yetkiniz yok.', 'danger')
-        return redirect(url_for('admin.user_detail', id=id))
-    
-    # Hedef kullanıcıyı yönetebilir mi?
-    if not current_user.can_manage_user(user):
-        flash('Bu kullanıcıyı yönetme yetkiniz yok.', 'danger')
-        return redirect(url_for('admin.user_detail', id=id))
+    # Root olmayan kullanıcılar için hiyerarşi kontrolü
+    if not current_user.has_role('root'):
+        # Kendinden yüksek veya eşit seviyedeki rolleri veremez
+        my_level = current_user.get_highest_role_level()
+        if role.hierarchy_level >= my_level:
+            flash(f'Bu rolü atama yetkiniz yok. Sadece seviye {my_level}\'den düşük rolleri atayabilirsiniz.', 'danger')
+            return redirect(url_for('admin.user_detail', id=id))
+        
+        # Kendinden yüksek seviyedeki kullanıcılara rol veremez
+        target_level = user.get_highest_role_level()
+        if target_level >= my_level:
+            flash('Bu kullanıcıya rol ekleme yetkiniz yok.', 'danger')
+            return redirect(url_for('admin.user_detail', id=id))
     
     if role not in user.roles:
         user.roles.append(role)
@@ -220,15 +230,19 @@ def remove_user_role(id, role_id):
     user = User.query.get_or_404(id)
     role = Role.query.get_or_404(role_id)
     
-    # Yetki kontrolü: Bu rolü kaldırabilir mi?
-    if not current_user.can_assign_role(role):
-        flash('Bu rolü kaldırma yetkiniz yok.', 'danger')
-        return redirect(url_for('admin.user_detail', id=id))
-    
-    # Hedef kullanıcıyı yönetebilir mi?
-    if not current_user.can_manage_user(user):
-        flash('Bu kullanıcıyı yönetme yetkiniz yok.', 'danger')
-        return redirect(url_for('admin.user_detail', id=id))
+    # Root olmayan kullanıcılar için hiyerarşi kontrolü
+    if not current_user.has_role('root'):
+        # Kendinden yüksek veya eşit seviyedeki rolleri kaldıramaz
+        my_level = current_user.get_highest_role_level()
+        if role.hierarchy_level >= my_level:
+            flash(f'Bu rolü kaldırma yetkiniz yok.', 'danger')
+            return redirect(url_for('admin.user_detail', id=id))
+        
+        # Kendinden yüksek seviyedeki kullanıcıların rollerini kaldıramaz
+        target_level = user.get_highest_role_level()
+        if target_level >= my_level:
+            flash('Bu kullanıcının rollerini kaldırma yetkiniz yok.', 'danger')
+            return redirect(url_for('admin.user_detail', id=id))
     
     if role in user.roles:
         user.roles.remove(role)
