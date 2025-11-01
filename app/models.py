@@ -73,6 +73,42 @@ class User(UserMixin, db.Model):
         """Kullanıcı admin mi?"""
         return self.has_role('admin')
     
+    def get_highest_role_level(self):
+        """Kullanıcının en yüksek rol seviyesini döndür"""
+        if not self.roles:
+            return 0
+        return max(role.hierarchy_level for role in self.roles)
+    
+    def can_manage_user(self, target_user):
+        """Bu kullanıcı hedef kullanıcıyı yönetebilir mi?"""
+        # Root her zaman yönetebilir
+        if self.has_role('root'):
+            return True
+        
+        # Kendini yönetemez
+        if self.id == target_user.id:
+            return False
+        
+        # Hedef kullanıcının en yüksek rolü, yöneten kullanıcıdan düşük olmalı
+        my_level = self.get_highest_role_level()
+        target_level = target_user.get_highest_role_level()
+        
+        return my_level > target_level
+    
+    def can_assign_role(self, role):
+        """Bu kullanıcı belirli bir rolü atayabilir mi?"""
+        # Root her rolü atayabilir
+        if self.has_role('root'):
+            return True
+        
+        # Root rolü sadece root atayabilir
+        if role.name == 'root':
+            return False
+        
+        # Kullanıcının en yüksek rolü, atanacak rolden yüksek olmalı
+        my_level = self.get_highest_role_level()
+        return my_level > role.hierarchy_level
+    
     @property
     def full_name(self):
         """Tam adı döndür"""
@@ -93,6 +129,7 @@ class Role(db.Model):
     display_name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.Text)
     is_system = db.Column(db.Boolean, default=False)  # Sistem rolleri silinemez
+    hierarchy_level = db.Column(db.Integer, default=0)  # Rol hiyerarşisi (yüksek = daha güçlü)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # İlişkiler

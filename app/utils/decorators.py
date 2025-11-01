@@ -69,3 +69,18 @@ def approved_user_required(f):
         
         return f(*args, **kwargs)
     return decorated_function
+
+
+def root_required(f):
+    """Root kontrolü decorator'ı - Sadece root kullanıcıları erişebilir"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Bu sayfaya erişmek için giriş yapmalısınız.', 'warning')
+            return redirect(url_for('auth.login'))
+        
+        if not current_user.has_role('root'):
+            abort(403)
+        
+        return f(*args, **kwargs)
+    return decorated_function

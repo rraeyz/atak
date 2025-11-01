@@ -16,7 +16,9 @@
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
             <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">📊 Dashboard</a>
             <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">👥 Kullanıcılar</a>
+            {% if current_user.has_role('root') %}
             <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">🔐 Roller</a>
+            {% endif %}
             <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">🗓️ Etkinlikler</a>
             <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">📝 Yazılar</a>
             <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">📢 Duyurular</a>
@@ -81,3 +83,4 @@
     </div>
 </section>
 {% endblock %}
+

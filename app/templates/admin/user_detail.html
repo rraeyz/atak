@@ -42,7 +42,7 @@
                         {% for role in user.roles %}
                             <span class="badge" style="background: {% if role.name == 'root' %}var(--star-yellow){% else %}var(--cosmic-purple){% endif %}; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                                 {% if role.name == 'root' %}👑{% endif %} {{ role.display_name }}
-                                {% if role.name != 'root' %}
+                                {% if current_user.can_assign_role(role) %}
                                 <form method="POST" action="{{ url_for('admin.remove_user_role', id=user.id, role_id=role.id) }}" style="display: inline;">
                                     <button type="submit" style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin: 0; font-size: 1.2rem;" 
                                             onclick="return confirm('Bu rolü kaldırmak istediğinizden emin misiniz?');">
@@ -56,6 +56,7 @@
                         {% endfor %}
                     </div>
                     
+                    {% if current_user.can_manage_user(user) %}
                     <!-- Rol Ekleme Formu -->
                     <form method="POST" action="{{ url_for('admin.add_user_role', id=user.id) }}" style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: end;">
                         <div class="form-group" style="margin-bottom: 0; flex: 1;">
@@ -63,8 +64,8 @@
                             <select name="role_id" class="form-control" required>
                                 <option value="">Rol Seçin...</option>
                                 {% for role in all_roles %}
-                                    {% if role not in user.roles and role.name != 'root' %}
-                                        <option value="{{ role.id }}">{{ role.display_name }}</option>
+                                    {% if role not in user.roles and current_user.can_assign_role(role) %}
+                                        <option value="{{ role.id }}">{{ role.display_name }} (Seviye: {{ role.hierarchy_level }})</option>
                                     {% endif %}
                                 {% endfor %}
                             </select>
@@ -73,6 +74,11 @@
                             ➕ Ekle
                         </button>
                     </form>
+                    {% else %}
+                    <p style="color: var(--text-gray); margin-top: 1rem; font-style: italic;">
+                        ⚠️ Bu kullanıcının rollerini yönetme yetkiniz yok.
+                    </p>
+                    {% endif %}
                 </div>
                 <div>
                     <strong>Kayıt Tarihi:</strong> {{ user.created_at.strftime('%d.%m.%Y %H:%M') }}
@@ -116,3 +122,4 @@
     </div>
 </div>
 {% endblock %}
+

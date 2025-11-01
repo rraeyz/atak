@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from app import db
 from app.models import User, Role, Permission, Event, Post, Comment, EventRegistration, SiteSetting, ContactMessage, Announcement
-from app.utils.decorators import admin_required, permission_required
+from app.utils.decorators import admin_required, permission_required, root_required
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import json
@@ -125,7 +125,14 @@ def users():
 def user_detail(id):
     """Kullanıcı detay"""
     user = User.query.get_or_404(id)
-    all_roles = Role.query.all()
+    
+    # Sadece yönetebileceği rolleri göster
+    if current_user.has_role('root'):
+        all_roles = Role.query.order_by(Role.hierarchy_level.desc()).all()
+    else:
+        # Kendi seviyesinden düşük rolleri göster
+        my_level = current_user.get_highest_role_level()
+        all_roles = Role.query.filter(Role.hierarchy_level < my_level).order_by(Role.hierarchy_level.desc()).all()
     
     return render_template('admin/user_detail.html', user=user, all_roles=all_roles)
 
@@ -186,9 +193,14 @@ def add_user_role(id):
     
     role = Role.query.get_or_404(role_id)
     
-    # Root rolü sadece root kullanıcısına aittir, başkasına verilemez
-    if role.name == 'root':
-        flash('Root rolü özeldir ve başka kullanıcılara verilemez.', 'danger')
+    # Yetki kontrolü: Bu rolü atayabilir mi?
+    if not current_user.can_assign_role(role):
+        flash('Bu rolü atama yetkiniz yok.', 'danger')
+        return redirect(url_for('admin.user_detail', id=id))
+    
+    # Hedef kullanıcıyı yönetebilir mi?
+    if not current_user.can_manage_user(user):
+        flash('Bu kullanıcıyı yönetme yetkiniz yok.', 'danger')
         return redirect(url_for('admin.user_detail', id=id))
     
     if role not in user.roles:
@@ -208,9 +220,14 @@ def remove_user_role(id, role_id):
     user = User.query.get_or_404(id)
     role = Role.query.get_or_404(role_id)
     
-    # Root rolü kaldırılamaz
-    if role.name == 'root':
-        flash('Root rolü kaldırılamaz.', 'danger')
+    # Yetki kontrolü: Bu rolü kaldırabilir mi?
+    if not current_user.can_assign_role(role):
+        flash('Bu rolü kaldırma yetkiniz yok.', 'danger')
+        return redirect(url_for('admin.user_detail', id=id))
+    
+    # Hedef kullanıcıyı yönetebilir mi?
+    if not current_user.can_manage_user(user):
+        flash('Bu kullanıcıyı yönetme yetkiniz yok.', 'danger')
         return redirect(url_for('admin.user_detail', id=id))
     
     if role in user.roles:
@@ -223,21 +240,22 @@ def remove_user_role(id, role_id):
 
 # ===== ROL YÖNETİMİ =====
 @bp.route('/roller')
-@permission_required('manage_roles')
+@root_required
 def roles():
-    """Rol listesi"""
-    roles = Role.query.all()
+    """Rol listesi - Sadece root erişebilir"""
+    roles = Role.query.order_by(Role.hierarchy_level.desc()).all()
     return render_template('admin/roles.html', roles=roles)
 
 
 @bp.route('/roller/yeni', methods=['GET', 'POST'])
-@permission_required('manage_roles')
+@root_required
 def create_role():
-    """Yeni rol oluştur"""
+    """Yeni rol oluştur - Sadece root erişebilir"""
     if request.method == 'POST':
         name = request.form.get('name')
         display_name = request.form.get('display_name')
         description = request.form.get('description')
+        hierarchy_level = request.form.get('hierarchy_level', type=int, default=1)
         permission_ids = request.form.getlist('permissions', type=int)
         
         if not name or not display_name:
@@ -249,10 +267,16 @@ def create_role():
             flash('Bu isimde bir rol zaten mevcut.', 'danger')
             return redirect(url_for('admin.create_role'))
         
+        # Root seviyesine (100) ulaşılamaz
+        if hierarchy_level >= 100:
+            flash('Bu seviye sadece root için ayrılmıştır.', 'danger')
+            return redirect(url_for('admin.create_role'))
+        
         role = Role(
             name=name,
             display_name=display_name,
             description=description,
+            hierarchy_level=hierarchy_level,
             is_system=False
         )
         
@@ -272,10 +296,15 @@ def create_role():
 
 
 @bp.route('/roller/<int:id>/duzenle', methods=['GET', 'POST'])
-@permission_required('manage_roles')
+@root_required
 def edit_role(id):
-    """Rol düzenle"""
+    """Rol düzenle - Sadece root erişebilir"""
     role = Role.query.get_or_404(id)
+    
+    # Root rolü düzenlenemez
+    if role.name == 'root':
+        flash('Root rolü düzenlenemez.', 'warning')
+        return redirect(url_for('admin.roles'))
     
     if role.is_system:
         flash('Sistem rolleri düzenlenemez.', 'warning')
@@ -284,7 +313,15 @@ def edit_role(id):
     if request.method == 'POST':
         role.display_name = request.form.get('display_name')
         role.description = request.form.get('description')
+        hierarchy_level = request.form.get('hierarchy_level', type=int, default=1)
         permission_ids = request.form.getlist('permissions', type=int)
+        
+        # Root seviyesine ulaşılamaz
+        if hierarchy_level >= 100:
+            flash('Bu seviye sadece root için ayrılmıştır.', 'danger')
+            return redirect(url_for('admin.edit_role', id=id))
+        
+        role.hierarchy_level = hierarchy_level
         
         # İzinleri güncelle
         if permission_ids:
@@ -303,10 +340,15 @@ def edit_role(id):
 
 
 @bp.route('/roller/<int:id>/sil', methods=['POST'])
-@permission_required('manage_roles')
+@root_required
 def delete_role(id):
-    """Rol sil"""
+    """Rol sil - Sadece root erişebilir"""
     role = Role.query.get_or_404(id)
+    
+    # Root rolü silinemez
+    if role.name == 'root':
+        flash('Root rolü silinemez.', 'warning')
+        return redirect(url_for('admin.roles'))
     
     if role.is_system:
         flash('Sistem rolleri silinemez.', 'warning')
