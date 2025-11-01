@@ -18,13 +18,13 @@ with app.app_context():
     
     print("\n" + "=" * 60)
     
-    # admin rolü (root) - en yüksek
-    root_role = Role.query.filter_by(name='admin').first()
+    # root rolü - en yüksek
+    root_role = Role.query.filter_by(name='root').first()
     if root_role:
         root_role.hierarchy_level = 100
         print(f"✓ {root_role.display_name}: 100 (Root)")
     else:
-        print("⚠️  admin (root) rolü bulunamadı!")
+        print("⚠️  root rolü bulunamadı!")
     
     # manager rolü (Yönetici)
     manager_role = Role.query.filter_by(name='manager').first()
@@ -69,7 +69,7 @@ with app.app_context():
     # Diğer tüm rolleri 5 yap
     other_count = 0
     for role in all_roles:
-        if role.name not in ['admin', 'manager', 'moderator', 'content_creator', 'member', 'security']:
+        if role.name not in ['root', 'manager', 'moderator', 'content_creator', 'member', 'security']:
             role.hierarchy_level = 5
             other_count += 1
     

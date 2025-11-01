@@ -20,10 +20,10 @@ with app.app_context():
     print(f"Kullanıcı: {user.username}")
     print(f"Mevcut roller: {', '.join([r.display_name for r in user.roles])}\n")
     
-    # Admin rolünü bul
-    admin_role = Role.query.filter_by(name='admin').first()
+    # Root rolünü bul
+    admin_role = Role.query.filter_by(name='root').first()
     if not admin_role:
-        print("❌ admin rolü bulunamadı!")
+        print("❌ root rolü bulunamadı!")
         exit()
     
     # Admin rolü zaten var mı?
