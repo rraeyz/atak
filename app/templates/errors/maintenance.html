@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}🔧 Site Bakımda{% endblock %}
+
+{% block content %}
+<section style="padding: 6rem 0; min-height: 70vh; display: flex; align-items: center;">
+    <div class="container">
+        <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <div style="font-size: 8rem; margin-bottom: 1rem;">🔧</div>
+            <h1 style="font-size: 3rem; color: var(--star-yellow); margin-bottom: 1rem;">
+                Site Bakımda
+            </h1>
+            <h2 style="font-size: 1.5rem; color: var(--text-light); margin-bottom: 1.5rem;">
+                Sistemlerimizi Güncelliyoruz
+            </h2>
+            <p style="color: var(--text-gray); font-size: 1.2rem; margin-bottom: 3rem; line-height: 1.6;">
+                {{ message }}
+            </p>
+            
+            <div style="padding: 2rem; background: rgba(30, 58, 138, 0.3); border-radius: 16px; border: 2px solid var(--border-glow);">
+                <p style="color: var(--text-light); margin: 0;">
+                    <strong>Tahmini Süre:</strong> Kısa bir süre
+                </p>
+                <p style="color: var(--text-gray); margin-top: 0.5rem; margin-bottom: 0;">
+                    En kısa sürede geri döneceğiz! 🚀
+                </p>
+            </div>
+            
+            {% if current_user.is_authenticated and current_user.has_role('admin') %}
+            <div style="margin-top: 2rem; padding: 1rem; background: rgba(234, 179, 8, 0.1); border-radius: 8px; border-left: 4px solid var(--star-yellow);">
+                <p style="color: var(--star-yellow); margin: 0;">
+                    <i class="fas fa-crown"></i> <strong>Admin Modu:</strong> Bakım modundayken siteye erişebilirsiniz.
+                </p>
+                <a href="{{ url_for('admin.settings') }}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">
+                    ⚙️ Ayarlara Git
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+h1 {
+    animation: pulse 2s ease-in-out infinite;
+}
+</style>
+{% endblock %}

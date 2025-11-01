@@ -43,6 +43,36 @@ def create_app(config_name='default'):
     app.register_blueprint(blog.bp)
     app.register_blueprint(security.bp)
     
+    # Bakım modu kontrolü - TÜM isteklerde çalışır
+    @app.before_request
+    def check_maintenance():
+        from app.models import SiteSetting
+        from flask import render_template, request
+        from flask_login import current_user
+        
+        # Static dosyalar ve admin/auth route'larını atla
+        if request.endpoint and (
+            request.endpoint.startswith('admin.') or 
+            request.endpoint.startswith('auth.') or
+            request.endpoint == 'static'
+        ):
+            return None
+        
+        # Bakım modu kontrolü
+        maintenance_setting = SiteSetting.query.filter_by(key='maintenance_mode').first()
+        if maintenance_setting and maintenance_setting.value == 'true':
+            # Admin kullanıcıları bakım modunda da erişebilir
+            if current_user.is_authenticated and current_user.has_role('admin'):
+                return None
+            
+            # Bakım modu mesajı
+            message_setting = SiteSetting.query.filter_by(key='maintenance_message').first()
+            message = message_setting.value if message_setting else 'Site şu anda bakımdadır. Lütfen daha sonra tekrar ziyaret edin.'
+            
+            return render_template('errors/maintenance.html', message=message), 503
+        
+        return None
+    
     # Context processor'ları kaydet
     from app.utils import template_filters
     app.jinja_env.filters['datetime'] = template_filters.format_datetime

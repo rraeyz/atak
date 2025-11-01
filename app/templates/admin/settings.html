@@ -138,6 +138,9 @@
                                     <option value="false" {% if settings.get('maintenance_mode', 'false') == 'false' %}selected{% endif %}>Kapalı</option>
                                     <option value="true" {% if settings.get('maintenance_mode', 'false') == 'true' %}selected{% endif %}>Açık</option>
                                 </select>
+                                <small style="color: var(--star-yellow); display: block; margin-top: 0.5rem;">
+                                    ⚠️ <strong>Dikkat:</strong> Bakım modu açıldığında sadece admin kullanıcıları siteye erişebilir!
+                                </small>
                             </div>
                             
                             <div class="form-group">
