@@ -4,12 +4,30 @@ Veritabanına hierarchy_level kolonu ekle
 import sqlite3
 import os
 
-# Veritabanı yolu - PythonAnywhere'de bu path'i değiştir
-db_path = 'instance/atak.db'
+# Olası veritabanı yolları
+possible_paths = [
+    'instance/atak.db',
+    '/home/rraeyz/atak/instance/atak.db',
+    '/home/rraeyz/mysite/instance/atak.db',
+    'atak.db',
+    '/tmp/atak.db',
+]
 
-if not os.path.exists(db_path):
-    print(f"❌ Veritabanı bulunamadı: {db_path}")
-    print("PythonAnywhere'de path'i kontrol et!")
+# Veritabanını bul
+db_path = None
+for path in possible_paths:
+    if os.path.exists(path):
+        db_path = path
+        print(f"✓ Veritabanı bulundu: {db_path}")
+        break
+
+if not db_path:
+    print("❌ Veritabanı bulunamadı!")
+    print("\nManuel olarak veritabanı yolunu belirtin:")
+    print("Python konsolunda şunu çalıştırın:")
+    print("  from run import app")
+    print("  with app.app_context():")
+    print("      print(app.config['SQLALCHEMY_DATABASE_URI'])")
     exit(1)
 
 conn = sqlite3.connect(db_path)
