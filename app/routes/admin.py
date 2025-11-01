@@ -160,8 +160,8 @@ def approve_user(id):
 @permission_required('manage_users')
 def toggle_ban_user(id):
     """Kullanıcıyı banla/ban kaldır"""
-    # Sadece moderatör ve yöneticiler ban işlemi yapabilir
-    if not (current_user.has_role('moderator') or current_user.has_role('admin')):
+    # Sadece moderatör ve root kullanıcılar ban işlemi yapabilir
+    if not (current_user.has_role('moderator') or current_user.has_role('root')):
         abort(403)
     
     user = User.query.get_or_404(id)
@@ -171,9 +171,9 @@ def toggle_ban_user(id):
         flash('Root kullanıcıları banlanamaz.', 'danger')
         return redirect(url_for('admin.user_detail', id=id))
     
-    # Admin ve moderatörleri banlayamaz
-    if user.has_role('admin') or user.has_role('moderator'):
-        flash('Yönetici veya moderatör banlanamaz.', 'danger')
+    # Moderatörleri banlayamaz
+    if user.has_role('moderator'):
+        flash('Moderatör banlanamaz.', 'danger')
         return redirect(url_for('admin.user_detail', id=id))
     
     # Kendi kendini banlayamaz

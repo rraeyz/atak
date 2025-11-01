@@ -61,8 +61,8 @@ def create_app(config_name='default'):
         # Bakım modu kontrolü
         maintenance_setting = SiteSetting.query.filter_by(key='maintenance_mode').first()
         if maintenance_setting and maintenance_setting.value == 'true':
-            # Admin kullanıcıları bakım modunda da erişebilir
-            if current_user.is_authenticated and current_user.has_role('admin'):
+            # Root kullanıcıları bakım modunda da erişebilir
+            if current_user.is_authenticated and current_user.has_role('root'):
                 return None
             
             # Bakım modu mesajı ve süresi

@@ -48,7 +48,7 @@ def admin_required(f):
             flash('Bu sayfaya erişmek için giriş yapmalısınız.', 'warning')
             return redirect(url_for('auth.login'))
         
-        if not current_user.has_role('admin'):
+        if not current_user.has_role('root'):
             abort(403)
         
         return f(*args, **kwargs)

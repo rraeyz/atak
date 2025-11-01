@@ -17,11 +17,11 @@ with app.app_context():
         root_role.hierarchy_level = 100
         print(f"✓ {root_role.display_name}: Seviye 100 (Root)")
     
-    # Admin rolü
-    admin_role = Role.query.filter_by(name='admin').first()
-    if admin_role:
-        admin_role.hierarchy_level = 50
-        print(f"✓ {admin_role.display_name}: Seviye 50 (Yönetici)")
+    # Manager rolü (Yönetici)
+    manager_role = Role.query.filter_by(name='manager').first()
+    if manager_role:
+        manager_role.hierarchy_level = 50
+        print(f"✓ {manager_role.display_name}: Seviye 50 (Yönetici)")
     
     # Moderatör rolü
     moderator_role = Role.query.filter_by(name='moderator').first()

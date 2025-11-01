@@ -45,18 +45,18 @@ def seed_db():
     from datetime import datetime, timedelta
     
     # Rolleri oluştur
-    admin_role = Role(name='admin', display_name='root', 
-                     description='Tüm yetkilere sahip sistem yöneticisi', is_system=True)
+    admin_role = Role(name='root', display_name='Root', 
+                     description='Tüm yetkilere sahip sistem yöneticisi', is_system=True, hierarchy_level=100)
     manager_role = Role(name='manager', display_name='Yönetici',
-                       description='Admin paneline erişimi ve tüm yetkileri olan yönetici')
+                       description='Admin paneline erişimi ve tüm yetkileri olan yönetici', hierarchy_level=50)
     moderator_role = Role(name='moderator', display_name='Moderatör',
-                         description='Yorumları ve içerikleri denetleyebilir')
+                         description='Yorumları ve içerikleri denetleyebilir', hierarchy_level=30)
     content_creator_role = Role(name='content_creator', display_name='İçerik Üreticisi',
-                                description='Blog yazısı ve etkinlik paylaşabilir')
+                                description='Blog yazısı ve etkinlik paylaşabilir', hierarchy_level=20)
     security_role = Role(name='security', display_name='Güvenlik',
-                        description='Etkinlik girişlerinde QR kod okutabilir')
+                        description='Etkinlik girişlerinde QR kod okutabilir', hierarchy_level=15)
     member_role = Role(name='member', display_name='Üye',
-                      description='Standart kullanıcı')
+                      description='Standart kullanıcı', hierarchy_level=10)
     
     db.session.add_all([admin_role, manager_role, moderator_role, content_creator_role, security_role, member_role])
     

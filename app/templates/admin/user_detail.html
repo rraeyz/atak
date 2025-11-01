@@ -97,8 +97,8 @@
                 </form>
                 {% endif %}
                 
-                {% if current_user.has_role('moderator') or current_user.has_role('admin') %}
-                    {% if not (user.has_role('root') or user.has_role('admin') or user.has_role('moderator')) and user.id != current_user.id %}
+                {% if current_user.has_role('moderator') or current_user.has_role('root') %}
+                    {% if not (user.has_role('root') or user.has_role('moderator')) and user.id != current_user.id %}
                     <form method="POST" action="{{ url_for('admin.toggle_ban_user', id=user.id) }}" style="display: inline;">
                         {% if user.is_active %}
                         <button type="submit" class="btn btn-danger" 

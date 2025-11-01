@@ -70,8 +70,12 @@ class User(UserMixin, db.Model):
         return self.has_permission(permission_name)
     
     def is_admin(self):
-        """Kullanıcı admin mi?"""
-        return self.has_role('admin')
+        """Kullanıcı root mu? (geriye dönük uyumluluk için)"""
+        return self.has_role('root')
+    
+    def is_root(self):
+        """Kullanıcı root mu?"""
+        return self.has_role('root')
     
     def get_highest_role_level(self):
         """Kullanıcının en yüksek rol seviyesini döndür"""

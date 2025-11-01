@@ -26,10 +26,10 @@
                 </p>
             </div>
             
-            {% if current_user.is_authenticated and current_user.has_role('admin') %}
+            {% if current_user.is_authenticated and current_user.has_role('root') %}
             <div style="margin-top: 2rem; padding: 1rem; background: rgba(234, 179, 8, 0.1); border-radius: 8px; border-left: 4px solid var(--star-yellow);">
                 <p style="color: var(--star-yellow); margin: 0;">
-                    <i class="fas fa-crown"></i> <strong>Admin Modu:</strong> Bakım modundayken siteye erişebilirsiniz.
+                    <i class="fas fa-crown"></i> <strong>Root Modu:</strong> Bakım modundayken siteye erişebilirsiniz.
                 </p>
                 <a href="{{ url_for('admin.settings') }}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">
                     ⚙️ Ayarlara Git

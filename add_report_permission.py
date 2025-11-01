@@ -11,15 +11,15 @@ def add_report_permission():
     app = create_app()
     
     with app.app_context():
-        print("Admin rolü ve izni kontrol ediliyor...")
+        print("Root rolü ve izni kontrol ediliyor...")
         
-        # Admin rolünü bul
-        admin_role = Role.query.filter_by(name='admin').first()
+        # Root rolünü bul
+        admin_role = Role.query.filter_by(name='root').first()
         if not admin_role:
-            print("❌ Admin rolü bulunamadı!")
+            print("❌ Root rolü bulunamadı!")
             return
         
-        print(f"✓ Admin rolü bulundu: {admin_role.display_name}")
+        print(f"✓ Root rolü bulundu: {admin_role.display_name}")
         
         # view_event_reports iznini bul
         report_permission = Permission.query.filter_by(name='view_event_reports').first()
