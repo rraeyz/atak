@@ -153,6 +153,11 @@ def toggle_ban_user(id):
     
     user = User.query.get_or_404(id)
     
+    # Root kullanıcıları banlanamaz
+    if user.has_role('root'):
+        flash('Root kullanıcıları banlanamaz.', 'danger')
+        return redirect(url_for('admin.user_detail', id=id))
+    
     # Admin ve moderatörleri banlayamaz
     if user.has_role('admin') or user.has_role('moderator'):
         flash('Yönetici veya moderatör banlanamaz.', 'danger')
@@ -181,6 +186,11 @@ def add_user_role(id):
     
     role = Role.query.get_or_404(role_id)
     
+    # Root rolü sadece root kullanıcısına aittir, başkasına verilemez
+    if role.name == 'root':
+        flash('Root rolü özeldir ve başka kullanıcılara verilemez.', 'danger')
+        return redirect(url_for('admin.user_detail', id=id))
+    
     if role not in user.roles:
         user.roles.append(role)
         db.session.commit()
@@ -197,6 +207,11 @@ def remove_user_role(id, role_id):
     """Kullanıcıdan rol kaldır"""
     user = User.query.get_or_404(id)
     role = Role.query.get_or_404(role_id)
+    
+    # Root rolü kaldırılamaz
+    if role.name == 'root':
+        flash('Root rolü kaldırılamaz.', 'danger')
+        return redirect(url_for('admin.user_detail', id=id))
     
     if role in user.roles:
         user.roles.remove(role)
