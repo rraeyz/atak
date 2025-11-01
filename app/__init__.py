@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_mail import Mail
+# from flask_mail import Mail  # Gerektiğinde eklenecek
 from flask_migrate import Migrate
 from config import config
 import os
@@ -9,7 +9,7 @@ import os
 # Extension'ları başlat
 db = SQLAlchemy()
 login_manager = LoginManager()
-mail = Mail()
+# mail = Mail()  # Gerektiğinde eklenecek
 migrate = Migrate()
 
 def create_app(config_name='default'):
@@ -22,7 +22,7 @@ def create_app(config_name='default'):
     # Extension'ları uygulamaya bağla
     db.init_app(app)
     login_manager.init_app(app)
-    mail.init_app(app)
+    # mail.init_app(app)  # Gerektiğinde eklenecek
     migrate.init_app(app, db)
     
     # Login manager ayarları
